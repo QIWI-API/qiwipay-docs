@@ -38,6 +38,8 @@ search: true
 
 # Introduction
 
+###### Last update: 2020-04-28 | [Edit on GitHub](https://github.com/QIWI-API/qiwipay-docs/blob/master/qiwipay_en.html.md)
+
 QiwiPay interface is intended for card payment operations. The service allows RSP to accept secure payments from their clients.
 
 QiwiPay supports the following: payment processing, a two-step payment confirmation, refunds, transaction status query.
