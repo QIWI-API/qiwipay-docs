@@ -1,9 +1,9 @@
 ---
-title: QiwiPay Reference
+title: QIWI PAY Reference
 
-metatitle: QiwiPay Reference
+metatitle: QIWI PAY Reference
 
-metadescription: Интерфейс QiwiPay предназначен для обслуживания операций по банковским картам. Сервис позволяет ТСП принимать безопасные платежи по картам от клиентов.
+metadescription: Интерфейс QIWI PAY предназначен для обслуживания операций по банковским картам. Сервис позволяет ТСП принимать безопасные платежи по картам от клиентов.
 
 language_tabs:
   - json: JSON
@@ -27,7 +27,6 @@ search: true
  *[API]: Application Programming Interface -  набор готовых методов, предоставляемых приложением системой для использования во внешних программных продуктах.
  *[HMAC]: Hash-based message authentication code - код проверки подлинности сообщений, использующий хеш-функции.
  *[ТСП]: Торгово-сервисное предприятие
- *[MPI]: Merchant Plug-In - модуль системы выполняющий 3DS аутентификацию.
  *[PCI DSS]: Payment Card Industry Data Security Standard -  стандарт безопасности данных индустрии платёжных карт, учреждённым международными платёжными системами Visa, MasterCard, American Express, JCB и Discover.
  *[REST]: Representational State Transfer -  архитектурный стиль взаимодействия компонентов распределённого приложения в сети.
  *[JSON]: JavaScript Object Notation - текстовый формат обмена данными, основанный на JavaScript.
@@ -36,23 +35,24 @@ search: true
  *[PKCS#10]: Стандарт запроса на сертификат [RFC2986](https://tools.ietf.org/html/rfc2986).
  *[HTTPS]: Расширение протокола **HTTP** для поддержки шифрования в целях повышения безопасности. Данные в протоколе HTTPS передаются поверх криптографических протоколов SSL или TLS. В отличие от HTTP с TCP-портом 80, для HTTPS по умолчанию используется TCP-порт 443.
 
+ <!-- *[MPI]: Merchant Plug-In - модуль системы выполняющий 3DS аутентификацию.-->
 
 # Введение {#start}
 
 ###### Последнее обновление: 2020-04-28 | [Редактировать на GitHub](https://github.com/QIWI-API/qiwipay-docs/blob/master/qiwipay_ru.html.md)
 
 
-Интерфейс QiwiPay предназначен для обслуживания операций по банковским картам. Сервис позволяет ТСП принимать безопасные платежи по картам от клиентов.
+Сервис QIWI PAY предназначен для обслуживания операций по банковским картам. Сервис позволяет ТСП принимать безопасные платежи по картам от клиентов.
 
 Сервис поддерживает функции выполнения платежа, подтверждения платежей, выполненных по двухшаговому сценарию, отмены оплаты, возврата денег, получения статуса операции.
 
 # Способы взаимодействия {#ways}
 
-Существует два способа работы с QiwiPay:
+Существует два способа работы с QIWI PAY:
 
-* QiwiPay WPF - платежная форма на стороне QIWI. Не требует сложной реализации, но ограничена по функциональности (поддерживает только операции платежа).
+* QIWI PAY WPF - платежная форма на стороне QIWI. Не требует сложной реализации, но ограничена по функциональности (поддерживает только операции платежа).
 
-* QiwiPay API - полнофункциональное API для платежных операций. API использует REST-архитектуру. Параметры передаются методом POST в теле запроса в формате JSON. При этом платежная форма для ввода реквизитов карты реализуется на стороне ТСП.
+* QIWI PAY API - полнофункциональное API для платежных операций. API использует REST-архитектуру. Параметры передаются методом POST в теле запроса в формате JSON. При этом платежная форма для ввода реквизитов карты реализуется на стороне ТСП.
 
 <aside class="success">
 Выполнять запросы через API, в которых передаются полные номера карт, допускается только в том случае, если ТСП имеет PCI DSS сертификат, т.к. в этом случае принимает и обрабатывает на своей стороне карточные данные.
@@ -61,11 +61,11 @@ search: true
 
 ##URL сервисов оплаты {#urls}
 
-* Для работы с QiwiPay WPF необходимо делать редирект покупателя на URL:
+* Для работы с QIWI PAY WPF необходимо делать редирект покупателя на URL:
 
 `https://pay.qiwi.com/paypage/initial`.
 
-* Для работы с QiwiPay API необходимо отправлять HTTP POST запросы на URL:  
+* Для работы с QIWI PAY API необходимо отправлять HTTP POST запросы на URL:  
 
 `https://acquiring.qiwi.com/merchant/direct`.
 
@@ -75,9 +75,9 @@ search: true
 
 В каждом запросе ТСП к API или при загрузке платежной формы WPF должен указываться код операции. Операция определяет, какое именно действие должно быть выполнено.
 
-Список доступных операций для каждого способа взаимодействия с QiwiPay приведен в таблице.
+Список доступных операций для каждого способа взаимодействия с QIWI PAY приведен в таблице.
 
-Код операции | QiwiPay WPF | QiwiPay API | Операция | Финансовая | Описание
+Код операции | QIWI PAY WPF | QIWI PAY API | Операция | Финансовая | Описание
 ------------ | ----------- | ----------- | -------- | ---------- | --------
 1 | + | + | sale | Да | Одношаговый сценарий оплаты
 2 | - | + | finish_3ds | Зависит от сценария | Возврат в систему после 3DS аутентификации
@@ -117,29 +117,115 @@ search: true
 С точки зрения наличия полей в запросе, все операции идентичны. Отличаются лишь [коды операций](#operations).
 
 <aside class="notice">
-В случае QiwiPay WPF для двухшагового сценария выполняется только первая операция (<code>auth</code>).
+В случае QIWI PAY WPF для двухшагового сценария выполняется только первая операция (<code>auth</code>).
 </aside>
 
 ## Технология 3DS {#threeds}
 
 3DS (3-D Secure) — общее название программ Verified By Visa и MasterCard Secure Code от платежных систем Visa и MasterCard соответственно. Суть программы в проверке подлинности держателя (то есть защита от несанкционированного использования карты) эмитентом перед оплатой. На практике это выглядит так: держатель указывает реквизиты карты, далее открывается сайт эмитента, где держателю предлагается ввести пароль или секретный код (как правило, код отправляется в СМС сообщении). Если код указан правильно, оплата будет проведена. Если нет — отклонена.
 
-Операция покупки может быть проведена через QiwiPay с использованием технологии 3DS, если по карте необходима 3DS-аутентификация.
+Операция покупки может быть проведена через QIWI PAY с использованием технологии 3DS, если по карте необходима 3DS-аутентификация.
 
-Диаграмма функционирования 3DS на примере операции с использованием способа QiwiPay WPF.
+Диаграмма функционирования 3DS на примере операции с использованием способа QIWI PAY WPF.
 
-<img src="/images/3ds.png" class="image" />
+<!--img src="/images/3ds.png" class="image" /-->
+
+<div class="mermaid">
+sequenceDiagram
+participant Customer
+participant Issuer
+participant ips as Visa/MC
+participant qp as QIWI PAY
+participant qb as QIWI Bank
+Note over Customer,Issuer: Issuer Domain
+Note over ips: Interaction Domain
+Note over qp,qb: Acquirer Domain
+Customer->>qp:Отправка данных карты<br>с платежной формы
+activate Customer
+activate qp 
+qp->>ips:Отправка VEReq<br>для проверки карты на участие в<br>программе 3-D Secure
+activate ips 
+ips->>Issuer:Запрос в ACS<br>для проверки карты
+activate Issuer 
+Issuer-->>ips:Возврат результата проверки (VERes)
+deactivate Issuer
+ips-->>qp:Возврат результата<br>проверки (VERes)
+deactivate ips
+qp->>qp:Генерация PAReq<br>на основании VERes
+qp-->>Customer:Перенаправление плательщика с PAReq на ACS URL<br>из VERes для ввода пароля 3-D Secure
+deactivate qp
+deactivate Customer
+Customer->>Issuer:Переход плательщика на ACS URL
+activate Customer 
+activate Issuer 
+Issuer-->>Customer:Отправка одноразового<br>пароля в SMS
+Customer->>Issuer:Ввод одноразового пароля
+Issuer->>ips:Отправка данных о результате<br>аутентификации в ACS
+Issuer-->>Customer:Перенаправление плательщика на<br>страницу QIWI PAY с PARes
+deactivate Customer
+deactivate Issuer 
+Customer->>qp:Переход плательщика на QIWI PAY page
+activate Customer 
+activate qp 
+qp->>qp:Проверка валидности PARes
+qp->>qb:Отправка<br>авторизационного запроса<br>с данными из PARes
+deactivate qp
+deactivate Customer
+</div>
 
 
-# QiwiPay WPF {#wpf}
+# QIWI PAY WPF {#wpf}
 
-Клиенту отображается платежная форма для ввода реквизитов карты на стороне QiwiPay.
+Клиенту отображается платежная форма для ввода реквизитов карты на стороне QIWI PAY.
 
 ТСП достаточно просто сделать редирект клиента на платежную форму.
 
-Схема одношагового сценария платежа с использованием платежной формы (WPF) на стороне QiwiPay.
+Схема одношагового сценария платежа с использованием платежной формы (WPF) на стороне QIWI PAY.
 
-<img src="/images/wpf_sale.png" class="image" />
+<!--img src="/images/wpf_sale.png" class="image" /-->
+
+<div class="mermaid">
+sequenceDiagram 
+participant Customer
+participant Merchant
+participant QiwiPay as QIWI PAY 
+participant QiwiBank as QIWI Bank
+Customer->>Merchant:Оформление заказа,<br>предложение оплатить<br>с помощью пластиковой карты
+activate Merchant
+Merchant-->>Customer:Перенаправление на<br>платежную форму
+deactivate Merchant
+Customer->>QiwiPay:Запрос на показ<br>платежной формы
+activate QiwiPay
+QiwiPay-->>Customer:Отображение платежной формы
+deactivate QiwiPay
+Customer->>QiwiPay:Ввод данных карты и отправка формы
+activate QiwiPay
+QiwiPay->>QiwiPay:Первичная валидация<br>входных параметров,<br>создание транзакции
+QiwiPay->>QiwiPay:Модуль борьбы с мошенничеством
+rect rgb(237, 243, 255)
+Note over Customer, QiwiPay:3-D Secure
+QiwiPay->>QiwiPay:Проверяем карту<br>на участие в 3-D Secure
+QiwiPay-->>Customer:Перенаправление плательщика на ACS URL
+deactivate QiwiPay
+Customer->>QiwiPay:Возврат с ACS с результатом верификации
+activate QiwiPay
+end
+QiwiPay->>QiwiBank:Авторизационный запрос
+activate QiwiBank
+QiwiBank-->>QiwiPay:Успешная авторизация
+deactivate QiwiBank 
+rect rgb(237, 243, 255)
+Note over Customer, QiwiPay:Немедленное уведомление об операции
+QiwiPay->>Merchant:Уведомление о результате<br>операции (callback)
+activate Merchant
+Merchant-->>QiwiPay:Подтверждение получения<br>уведомления
+deactivate Merchant
+end
+QiwiPay->>Customer:Страница статуса<br>с результатом операции
+QiwiPay->>Customer:E-mail уведомление о результате операции
+deactivate QiwiPay
+Customer->>Merchant:Возврат в магазин<br>со страницы статуса
+</div>
 
 
 ## Перенаправление на платежную форму
@@ -155,11 +241,11 @@ search: true
 </form>
 ~~~
 
-Все операции платежа (`sale`, `auth`, `recurring_init_sale`, `recurring_init_auth`) используют один и тот же набор параметров.
+Все операции платежа (`sale`, `auth`) используют один и тот же набор параметров.
 
 Параметр|Условие|Тип данных|Описание
 --------|-------|----------|--------
-opcode|Обязательно|integer|Код операции (только `1`, `3`, `10`, `11`)
+opcode|Обязательно|integer|Код операции (только `1`, `3`)
 merchant_site|Обязательно|integer|Идентификатор сайта ТСП
 currency|Обязательно|integer|Валюта суммы операции в цифровом формате согласно ISO 4217
 sign|Обязательно|string(64)|[Контрольная сумма переданных параметров](#sign)
@@ -189,11 +275,11 @@ decline_url|Опционально|string(256)|URL для перенаправл
 
 
 
-# QiwiPay API {#api}
+# QIWI PAY API {#api}
 
 ## Авторизация
 
-Для передачи запросов в QiwiPay API требуется авторизация. Авторизация выполняется методом валидации клиентского сертификата, который выдается ТСП и должен использоваться при каждом запросе к API.
+Для передачи запросов в QIWI PAY API требуется авторизация. Авторизация выполняется методом валидации клиентского сертификата, который выдается ТСП и должен использоваться при каждом запросе к API.
 
 <aside class="success">
 Для получения сертификата необходимо обратиться в службу технической поддержки QIWI, предоставив запрос на сертификат (.csr) в формате PKCS#10.
@@ -201,13 +287,107 @@ decline_url|Опционально|string(256)|URL для перенаправл
 
 ## Реализация сценариев платежа {#scenario}
 
-### Схема одношагового сценария платежа (sale, recurring_init_sale)
+### Схема одношагового сценария платежа (sale)
 
-<img src="/images/api_sale.png" class="image" />
+<!--img src="/images/api_sale.png" class="image" /-->
+<div class="mermaid">
+sequenceDiagram
+participant Customer
+participant Merchant
+participant QiwiPay as QIWI PAY
+participant QiwiBank as QIWI Bank
+Customer->>Merchant:Отправка данных карты<br>с платежной формы
+activate Merchant
+Merchant->>QiwiPay:Запрос<br>на операцию "sale"
+activate QiwiPay
+QiwiPay->>QiwiPay:Модуль борьбы<br>с мошенничеством
+rect rgb(237, 243, 255)
+Note over Customer, QiwiPay:3-D Secure
+QiwiPay->>QiwiPay:Проверка карты<br>на участие в 3-D Secure
+QiwiPay-->>Merchant:Параметры для перенаправления<br>плательщика на ACS банка-эмитента
+deactivate QiwiPay
+Merchant-->>Customer:Перенаправление<br>плательщика на ACS URL
+deactivate Merchant
+Customer->>Merchant:Возврат с ACS<br>с результатом верификации 3-D Secure
+activate Merchant
+Merchant->>QiwiPay:Запрос<br>на операцию "finish_3ds"
+activate QiwiPay
+end
+QiwiPay->>QiwiBank:Авторизационный запрос
+activate QiwiBank
+QiwiBank-->>QiwiPay:Успешная авторизация
+QiwiPay->>QiwiBank:Финансовая операция<br>по результату авторизации
+QiwiBank-->>QiwiPay:Подтверждение<br>финансовой операции
+deactivate QiwiBank
+rect rgb(237, 243, 255)
+Note over Customer, QiwiPay:Немедленное уведомление об операции
+QiwiPay->>Merchant:Уведомление о результате<br>операции (callback)
+activate Merchant
+Merchant-->>QiwiPay:Подтверждение<br>получения уведомления
+deactivate Merchant
+end
+QiwiPay->>Merchant:Результат<br>выполнения операции
+QiwiPay->>Customer:E-mail уведомление<br>о результате операции
+deactivate QiwiPay
+Merchant->>Customer:Страница статуса<br>с результатом операции
+deactivate Merchant
+</div>
 
-### Схема двухшагового сценария платежа (auth, recurring_init_auth, capture)
+### Схема двухшагового сценария платежа (auth, capture)
 
-<img src="/images/api_auth.png" class="image" />
+<!--img src="/images/api_auth.png" class="image" /-->
+
+<div class="mermaid">
+sequenceDiagram
+participant Customer
+participant Merchant
+participant QiwiPay as  QIWI PAY
+participant QiwiBank as QIWI Bank
+Customer->>Merchant:Отправка данных карты<br>с платежной формы
+activate Merchant
+Merchant->>QiwiPay:Запрос<br>на операцию "auth"
+activate QiwiPay
+QiwiPay->>QiwiPay:Модуль борьбы<br>с мошенничеством
+rect rgb(237, 243, 255)
+Note over Customer, QiwiPay:3-D Secure
+QiwiPay->>QiwiPay:Проверка карты<br>на участие в 3-D Secure
+QiwiPay-->>Merchant:Параметры для перенаправления<br>плательщика на ACS банка-эмитента
+deactivate QiwiPay
+Merchant-->>Customer:Перенаправление<br>плательщика на ACS URL
+deactivate Merchant
+Customer->>Merchant:Возврат с ACS<br>с результатом верификации 3-D Secure
+activate Merchant
+Merchant->>QiwiPay:Запрос<br>на операцию "finish_3ds"
+activate QiwiPay
+end
+QiwiPay->>QiwiBank:Авторизационный запрос
+activate QiwiBank
+QiwiBank-->>QiwiPay:Успешная авторизация
+deactivate QiwiBank
+rect rgb(237, 243, 255)
+Note over Customer, QiwiPay:Немедленное уведомление об операции
+QiwiPay->>Merchant:Уведомление о результате<br>операции (callback)
+activate Merchant
+Merchant-->>QiwiPay:Подтверждение<br>получения уведомления
+deactivate Merchant
+end
+QiwiPay->>Merchant:Результат<br>выполнения операции
+QiwiPay->>Customer:E-mail уведомление<br>о результате операции
+deactivate QiwiPay
+Merchant->>Customer:Страница статуса<br>с результатом операции
+deactivate Merchant
+Note over Merchant:Ожидание запроса на подтверждение авторизации
+Merchant-->>QiwiPay:Запрос<br>на операцию "capture"
+activate Merchant 
+activate QiwiPay 
+QiwiPay->>QiwiBank:Финансовая операция<br>по результату авторизации
+activate QiwiBank 
+QiwiBank-->>QiwiPay:Подтверждение<br>финансовой операции
+deactivate QiwiBank
+QiwiPay->>Merchant:Уведомление о результате<br>операции (callback)
+deactivate QiwiPay
+deactivate Merchant
+</div>
 
 ## Операция покупки {#sale}
 
@@ -250,11 +430,11 @@ decline_url|Опционально|string(256)|URL для перенаправл
 }
 ~~~
 
-Все операции платежа (`sale`, `auth`, `recurring_init_sale`, `recurring_init_auth`) используют один и тот же набор параметров.
+Все операции платежа (`sale`, `auth`) используют один и тот же набор параметров.
 
 Параметр|Условие|Тип данных|Описание
 --------|-------|----------|--------
-opcode|Обязательно|integer|[Код операции](#operations) (`1`, `3`, `10`, `11`)
+opcode|Обязательно|integer|[Код операции](#operations) (`1`, `3`)
 merchant_site|Обязательно|integer|Идентификатор сайта ТСП
 pan|Условно обязательно|string(19)|Номер банковской карты
 expiry|Условно обязательно|string(4)|Срок действия банковской карты
@@ -790,7 +970,7 @@ product_name | string(25) | Описание услуги, которую пол
 }
 ~~~
 
-Авиаданные передаются в параметре `industry_data` в операциях `auth`, `capture`, `sale` при работе через QiwiPay API.
+Авиаданные передаются в параметре `industry_data` в операциях `auth`, `capture`, `sale` при работе через QIWI PAY API.
 В случае, если на момент совершения операции `auth` присутствуют не все необходимые данные, их можно отправить в операции `capture` после получения.
 
 В авиаданных должны присутствовать билеты из брони, а также все сегменты (перелеты) из каждого билета.
@@ -885,7 +1065,7 @@ eJylj0FqwzAQRfc5hdDapJacLNpV71GKUaUpUbEkxxpDTQi05CbJBUK7LPQM8o0qKTSmlKyymcV7mq8/
 ~~~
 
 
-Чек передается в параметре `merchant_cheque` при редиректе на QiwiPay WPF, а также в параметре `cheque` в операциях `auth`, `capture`, `sale` при работе через QiwiPay API.
+Чек передается в параметре `merchant_cheque` при редиректе на QIWI PAY WPF, а также в параметре `cheque` в операциях `auth`, `capture`, `sale` при работе через QIWI PAY API.
 
 JSON структура чека должна быть сжата алгоритмом DEFLATE, описанным в [RFC1951](http://www.ietf.org/rfc/rfc1951.txt), а после представлена в ZLIB формате, описанным в [RFC1950](http://www.ietf.org/rfc/rfc1950.txt). Далее результат кодируется в BASE64 и передается в параметре `merchant_cheque`(WPF) или `cheque`(API).
 

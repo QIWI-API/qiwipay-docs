@@ -1,9 +1,9 @@
 ---
-title: QiwiPay Reference
+title: QIWI PAY Reference
 
-metatitle: QiwiPay Reference
+metatitle: QIWI PAY Reference
 
-metadescription: QiwiPay interface is intended for card payment operations. The service allows RSP to accept secure payments from their clients.
+metadescription: QIWI PAY service is intended for card payment operations. The service allows Retail Service Provider to accept secure payments from their clients.
 
 language_tabs:
   - json: JSON
@@ -21,48 +21,48 @@ includes:
 search: true
 ---
 
- *[WPF]: Web Payment Form - a payment form to enter card data for an item.
- *[3DS]: 3-D Secure - a messaging protocol to exchange data during e-commerce transaction for consumer authentication purposes.
- *[OCT]: Original Credit Transaction - a financial transaction that credits the Cardholder’s account.
- *[API]: Application Programming Interface -  a set of ready-for-use methods that allow the creation of applications which access the features or data of an application or other service.
- *[HMAC]: Hash-based message authentication code - a type of message authentication code involving a cryptographic hash function.
+ *[WPF]: Web Payment Form - a payment form to enter card data for an item
+ *[3DS]: 3-D Secure - a messaging protocol to exchange data during e-commerce transaction for consumer authentication purposes
+ *[OCT]: Original Credit Transaction - a financial transaction that credits the Cardholder’s account
+ *[API]: Application Programming Interface -  a set of ready-for-use methods that allow the creation of applications which access the features or data of an application or other service
+ *[HMAC]: Hash-based message authentication code - a type of message authentication code involving a cryptographic hash function
  *[RSP]: Retail Service Provider
- *[MPI]: Merchant Plug-In - a module integrated into QiwiPay store-front applications used to process authentication transactions.
- *[PCI DSS]: Payment Card Industry Data Security Standard -  The Payment Card Industry Data Security Standard – a proprietary information security standard for storing, processing and transmitting credit card data.
- *[REST]: Representational State Transfer -  a software architectural pattern for Network Interaction between distributed application components.
- *[JSON]: JavaScript Object Notation - a lightweight data-interchange format based on JavaScript.
- *[Luhn]: Luhn Algorithm - a checksum formula used for verifying and validating identification numbers against accidental errors.
- *[PKCS#10]:  [RFC2986](https://tools.ietf.org/html/rfc2986) Certificate requests standard.
- *[HTTPS]: **HTTP** protocol extension to encrypt and enforce security. In HTTPS protocol, data transfer over SSL and TLS cryptographic protocols. In contrast with HTTP on port 80, the TCP 443 port is used by default for HTTPS.
+ *[PCI DSS]: Payment Card Industry Data Security Standard -  The Payment Card Industry Data Security Standard – a proprietary information security standard for storing, processing and transmitting credit card data
+ *[REST]: Representational State Transfer -  a software architectural pattern for Network Interaction between distributed application components
+ *[JSON]: JavaScript Object Notation - a lightweight data-interchange format based on JavaScript
+ *[Luhn]: Luhn Algorithm - a checksum formula used for verifying and validating identification numbers against accidental errors
+ *[PKCS#10]:  [RFC2986](https://tools.ietf.org/html/rfc2986) Certificate requests standard
+ *[HTTPS]: **HTTP** protocol extension to encrypt and enforce security. In HTTPS protocol, data transfer over SSL and TLS cryptographic protocols. In contrast with HTTP on port 80, the TCP 443 port is used by default for HTTPS
 
+<!-- *[MPI]: Merchant Plug-In - a module integrated into QIWI PAY applications to process authentication transactions-->
 
 # Introduction
 
 ###### Last update: 2020-04-28 | [Edit on GitHub](https://github.com/QIWI-API/qiwipay-docs/blob/master/qiwipay_en.html.md)
 
-QiwiPay interface is intended for card payment operations. The service allows RSP to accept secure payments from their clients.
+QIWI PAY service is intended for card payment operations. The service allows RSP to accept secure payments from their clients.
 
-QiwiPay supports the following: payment processing, a two-step payment confirmation, refunds, transaction status query.
+QIWI PAY supports the following operations: payment processing, a two-step payment confirmation, refunds, transaction status query.
 
 # Integration Methods
 
-You can use one of the following integration methods on QiwiPay:
+You can use one of the following integration methods on QIWI PAY:
 
-* QiwiPay WPF - a web payment form on QIWI side. Quick and easy solution for accepting payments with limited functions (only payment transactions).
-* QiwiPay API - fully functional REST-based API for making card payments. All requests are POST-type and the parameters are in JSON body. RSP implements only the Payment Form Interface.
+* QIWI PAY WPF - a web payment form on QIWI side. Quick and easy solution for accepting payments with limited functions (only payment transactions).
+* QIWI PAY API - fully functional REST-based API for making card payments. All requests are POST-type and the parameters are in JSON body. RSP implements only the Payment Form Interface.
 
 <aside class="success">
-QiwiPay API requests with full card numbers are allowed by PCI DSS-certified merchants only, as Card Data are processed on the merchant's side.
+QIWI PAY API requests with full card numbers are allowed by PCI DSS-certified merchants only, as Card Data are processed on the merchant's side.
 </aside>
 
 
 ## Service URLs {#urls}
 
-* To use QiwiPay WPF, one is required to redirect client to the URL:
+* To use QIWI PAY WPF, one is required to redirect client to the URL:
 
 `https://pay.qiwi.com/paypage/initial`.
 
-* To use QiwiPay API, one is required to send HTTP POST requests to the URL:
+* To use QIWI PAY API, one is required to send HTTP POST requests to the URL:
 
 `https://acquiring.qiwi.com/merchant/direct`.
 
@@ -71,9 +71,9 @@ QiwiPay API requests with full card numbers are allowed by PCI DSS-certified mer
 
 To indicate which operation is performed, you need to specify Operation code (Op.Code) in each request to API or on loading WPF pay form. Operation code should be in each RSP request to API or to WPF form payload.
 
-The following operations are accessible through QiwiPay.
+The following operations are accessible through QIWI PAY.
 
-Op.Code | QiwiPay WPF | QiwiPay API | Operation | Financial? | Description
+Op.Code | QIWI PAY WPF | QIWI PAY API | Operation | Financial? | Description
 ------------ | ----------- | ----------- | -------- | --------
 1 | + | + | sale | Y | One-step payment
 2 | - | + | finish_3ds | Depends on scenario | Return to web-site after 3DS authentication
@@ -93,9 +93,9 @@ Financial operation means that there will be cash flows on bank accounts.
 
 # Operation Methods {#methods}
 
-## QiwiPay Flows
+## QIWI PAY Flows
 
-Two payment flows can be used in QiwiPay:
+Two payment flows can be used in QIWI PAY:
 
 * One-step - `sale` operation
 * Two-step - `auth` operation -> `capture` operation
@@ -111,32 +111,119 @@ The longest period between <code>auth</code> and <code>capture</code> operations
 </aside>
 
 <aside class="notice">
-Only the first operation of the two-step flow  (<code>auth</code>) is used in QiwiPay WPF.
+Only the first operation of the two-step flow  (<code>auth</code>) is used in QIWI PAY WPF.
 </aside>
 
 ## 3DS {#threeds}
 
 3DS (3-D Secure) is a common notation for technological frameworks of  Visa and MasterCard (Verified By Visa and MasterCard Secure Code, correspondingly). The main goal is to verify the Cardholder's identity by the Issuer before a payment and to prevent card data theft. In practice it work like that. The Cardholder enters his/her card details. The Issuer’s secure web page pops up requesting for verification data (a password or a secret code) to be sent by the Cardholder via SMS. If verification data is valid the payment is processed, if not valid it is rejected.
 
-`sale` operation via QiwiPay can be 3DS-validated if the Issuer requires 3DS authentication.
+`sale` operation via QIWI PAY can be 3DS-validated if the Issuer requires 3DS authentication.
 
-QiwiPay WPF Payment flow with 3DS verification is explained on the following scheme.
+QIWI PAY WPF Payment flow with 3DS verification is explained on the following scheme.
 
-<img src="/images/3ds_en.png" class="image" />
+<!--img src="/images/3ds_en.png" class="image" /-->
+<div class="mermaid">
+sequenceDiagram
+participant Customer
+participant Issuer
+participant ips as Visa/MC
+participant qp as QIWI PAY
+participant qb as QIWI Bank
+Note over Customer,Issuer: Issuer Domain
+Note over ips: Interaction Domain
+Note over qp,qb: Acquirer Domain
+Customer->>qp:Send card data from payment web-form
+activate Customer
+activate qp 
+qp->>ips:Send VEReq <br>to verify card for<br>3-D Secure enrollment
+activate ips 
+ips->>Issuer:Request to ACS<br>to verify card enrollment
+activate Issuer 
+Issuer-->>ips:Return verify response (VERes)
+deactivate Issuer
+ips-->>qp:Return verify response (VERes)
+deactivate ips
+qp->>qp:PAReq generation from VERes
+qp-->>Customer:Redirect from PAReq to ACS URL<br>taken from VERes<br>to enter 3-D Secure password
+deactivate qp
+deactivate Customer
+Customer->>Issuer:Redirect to ACS URL
+activate Customer 
+activate Issuer 
+Issuer-->>Customer:One-time password SMS
+Customer->>Issuer:Enter one-time password
+Issuer->>ips:Send ACS authentication<br>result data
+Issuer-->>Customer:Redirect to<br>QIWI PAY page<br>with PARes
+deactivate Customer
+deactivate Issuer 
+Customer->>qp:Redirect to QIWI PAY page
+activate Customer 
+activate qp 
+qp->>qp:PARes validity verification
+qp->>qb:Authorization request<br>with PARes data
+deactivate qp
+deactivate Customer
+</div>
 
 
-# QiwiPay WPF {#wpf}
 
-RSP only redirects customers to https://pay.qiwi.com/payform. Then customers complete the payment form on QiwiPay web-site with their card details.
+# QIWI PAY WPF {#wpf}
+
+RSP only redirects customers to https://pay.qiwi.com/payform. Then customers complete the payment form on QIWI PAY web-site with their card details.
 
 ## Payment Flow
 
-QiwiPay WPF one-step payment flow is explained on the following scheme.
+QIWI PAY WPF one-step payment flow is explained on the following scheme.
 
-<img src="/images/wpf_sale_en.png" class="image" />
+<!--img src="/images/wpf_sale_en.png" class="image" /-->
+
+<div class="mermaid">
+sequenceDiagram 
+participant Customer
+participant Merchant
+participant QiwiPay as QIWI PAY 
+participant QiwiBank as QIWI Bank
+Customer->>Merchant:Placing order,<br>choose card payment
+activate Merchant
+Merchant-->>Customer:Redirect to payment web-form
+deactivate Merchant
+Customer->>QiwiPay:Request for payment web-form
+activate QiwiPay
+QiwiPay-->>Customer:Payment web-form
+deactivate QiwiPay
+Customer->>QiwiPay:Enter card data and submit form
+activate QiwiPay
+QiwiPay->>QiwiPay:Initial verification of parameters,<br>creating transaction
+QiwiPay->>QiwiPay:Anti-fraud module
+rect rgb(237, 243, 255)
+Note over Customer, QiwiPay: 3-D Secure
+QiwiPay->>QiwiPay:Verify card for 3-D Secure enrollment
+QiwiPay-->>Customer:Redirect to ACS URL
+deactivate QiwiPay
+Customer->>QiwiPay:Return from ACS page<br>with 3-D Secure verification results
+activate QiwiPay
+end
+QiwiPay->>QiwiBank:Authorization request
+activate QiwiBank
+QiwiBank-->>QiwiPay:Successful authorization
+deactivate QiwiBank 
+rect rgb(237, 243, 255)
+Note over Customer, QiwiPay: Immediate notification
+QiwiPay->>Merchant:Notification on operation<br>result (callback)
+activate Merchant
+Merchant-->>QiwiPay:Confirm receiving<br>notification
+deactivate Merchant
+end
+QiwiPay->>Customer:Status page with operation result
+QiwiPay->>Customer:E-mail notification
+deactivate QiwiPay
+Customer->>Merchant:Return to shop<br>web-site from<br>status page
+</div>
 
 
-## Redirect to QiwiPay WPF
+
+## Redirect to QIWI PAY WPF
 
 To redirect, use standard web form HTTP POST data request.
 
@@ -157,7 +244,7 @@ Use the following form fields for payment operations. All fields not specified b
 
 Parameter|Required|Data type|Description
 --------|-------|----------|--------
-opcode|Yes|integer|Operation code (`1`, `3`, `10`, `11` only)
+opcode|Yes|integer|Operation code (`1`, `3` only)
 merchant_site|Yes|integer|RSP site ID (issued by QIWI)
 currency|Yes|integer|Operation currency by ISO 4217
 [sign](#sign)|Yes|string(64)|Checksum of the request's parameters
@@ -183,11 +270,11 @@ success_url|No|string(256)|Redirect URL when payment is successful
 decline_url|No|string(256)|Redirect URL when payment is unsuccessful
 
 
-# QiwiPay API {#api}
+# QIWI PAY API {#api}
 
 ## Authorization {#api_auth}
 
-QiwiPay API authorizes the request by RSP client certificate validation. Certificate is issued by QIWI for each RSP.
+QIWI PAY API authorizes the request by RSP client certificate validation. Certificate is issued by QIWI for each RSP.
 
 <aside class="success">
 To obtain certificate, please submit certificate request in .csr PKCS#10 format to QIWI Support (bss@qiwi.com).
@@ -195,13 +282,110 @@ To obtain certificate, please submit certificate request in .csr PKCS#10 format 
 
 ## Payment Flow
 
-### One-step payment flow
+### One-step payment flow (`sale` operation)
 
-<img src="/images/api_sale_en.png" class="image" />
+<!--img src="/images/api_sale_en.png" class="image" /-->
 
-### Two-step payment flow
+<div class="mermaid">
+sequenceDiagram
+participant Customer
+participant Merchant
+participant QiwiPay as QIWI PAY
+participant QiwiBank as QIWI Bank
+Customer->>Merchant:Send card data<br>from payment web-form
+activate Merchant
+Merchant->>QiwiPay:"sale" operation<br>request
+activate QiwiPay
+QiwiPay->>QiwiPay:Anti-fraud module
+rect rgb(237, 243, 255)
+Note over Customer, QiwiPay: 3-D Secure
+QiwiPay->>QiwiPay:Check card<br>3-D Secure enrollment
+QiwiPay-->>Merchant:Redirect ACS<br>Issuing Bank parameters<br>for Customer
+deactivate QiwiPay
+Merchant-->>Customer:Redirect to ACS URL
+deactivate Merchant
+Customer->>Merchant:Return with 3-D Secure<br>verificaiton result
+activate Merchant
+Merchant->>QiwiPay:"finish_3ds" operation<br>request
+activate QiwiPay
+end
+QiwiPay->>QiwiBank:Authorization request
+activate QiwiBank
+QiwiBank-->>QiwiPay:Successful authorization
+QiwiPay->>QiwiBank:Authorized financial operation
+QiwiBank-->>QiwiPay:Confirmed financial operation
+deactivate QiwiBank
+rect rgb(237, 243, 255)
+Note over Customer, QiwiPay: Immediate notification
+QiwiPay->>Merchant:Notification on<br>operation result (callback)
+activate Merchant
+Merchant-->>QiwiPay:Confirm receiving notification
+deactivate Merchant
+end
+QiwiPay->>Merchant:Operation result
+QiwiPay->>Customer:E-mail notification
+deactivate QiwiPay
+Merchant->>Customer:Status page<br>with operation result
+deactivate Merchant
+</div>
 
-<img src="/images/api_auth_en.png" class="image" />
+
+### Two-step payment flow (`auth`, `capture` operations)
+
+<!--img src="/images/api_auth_en.png" class="image" /-->
+
+<div class="mermaid">
+sequenceDiagram
+participant Customer
+participant Merchant
+participant QiwiPay as  QIWI PAY
+participant QiwiBank as QIWI Bank
+Customer->>Merchant:Send card data<br>from payment web-form
+activate Merchant 
+Merchant->>QiwiPay:<br>"auth" operation<br>request 
+activate QiwiPay 
+QiwiPay->>QiwiPay:Anti-fraud module
+rect rgb(237, 243, 255)
+Note over Customer, QiwiPay: 3-D Secure
+QiwiPay->>QiwiPay:Check card 3-D Secure<br>enrollment
+QiwiPay-->>Merchant:Redirect ACS Issuing Bank<br>parameters for Customer
+deactivate QiwiPay
+Merchant-->>Customer:Redirect to ACS URL
+deactivate Merchant
+Customer->>Merchant:Return with 3-D Secure<br>verification result
+activate Merchant 
+Merchant->>QiwiPay:"finish_3ds" operation<br>request
+activate QiwiPay 
+end
+QiwiPay->>QiwiBank: Auhtorization request
+activate QiwiBank 
+QiwiBank-->>QiwiPay: Successful authorization
+deactivate QiwiBank 
+rect rgb(237, 243, 255)
+Note over Customer, QiwiPay: Immediate notification
+QiwiPay->>Merchant:Notification on<br>operation result (callback)
+activate Merchant 
+Merchant-->>QiwiPay:Confirm receiving notification
+deactivate Merchant
+end
+QiwiPay->>Merchant:Operation result
+QiwiPay->>Customer:E-mail notification
+deactivate QiwiPay
+Merchant->>Customer:Status page<br>with operation result
+deactivate Merchant
+Note over Merchant: Awaiting for request confirming authorization
+Merchant-->>QiwiPay:"capture" operation<br>request
+activate Merchant 
+activate QiwiPay 
+QiwiPay->>QiwiBank:Financial operation<br>after authorization
+activate QiwiBank 
+QiwiBank-->>QiwiPay:Confirmed financial operation
+deactivate QiwiBank
+QiwiPay->>Merchant:Notification on<br>operation result (callback)
+deactivate QiwiPay
+deactivate Merchant
+</div>
+
 
 ## Sale Operation {#sale}
 
@@ -245,7 +429,7 @@ All payment operations (`sale`, `auth`) use the same set of parameters.
 
 Parameter|Required|Data type|Description
 --------|-------|----------|--------
-opcode|Yes|integer|[Operation code](#opcode) (`1`, `3`, `10`, `11`)
+opcode|Yes|integer|[Operation code](#opcode) (`1`, `3`)
 merchant_site|Yes|integer|RSP site ID (issued by QIWI)
 pan|Yes|string(19)|Card number (PAN)
 expiry|Yes|string(4)|Card expiry date
@@ -572,7 +756,7 @@ is_test | string(4) | Presence of this parameter with `true` value indicates tha
 
 Parameter|Required|Data type|Description
 --------|-------|----------|--------
-opcode|Yes|integer|Operation code (`12`)
+opcode|Yes|integer|Operation code (`20`)
 merchant_site|Yes|integer|RSP site ID (issued by QIWI)
 card_token | string(40) | Card token (if tokenization is enabled for the merchant site)
 txn_id | Yes | integer | Transaction ID
@@ -773,7 +957,7 @@ product_name|string(25)|Service description for the Customer
 }
 ~~~
 
-Avia data are transferred in `industry_data` parameter for `auth`, `capture`, `sale` operations of QiwiPay API.
+Avia data are transferred in `industry_data` parameter for `auth`, `capture`, `sale` operations of QIWI PAY API.
 In case of any necessary data are absent on the moment of `auth` operation, it can be sent in `capture` operation after receiving it.
 
 Avia data should include booked tickets as well as all segments (flights) from each ticket.
@@ -863,10 +1047,10 @@ According to Russian Federation law (54-FZ), every merchant should provide onlin
 
 Receipt may be transferred two-ways:
 
-* when using QiwiPay WPF redirect - in `merchant_cheque` parameter
-* when using QiwiPay API - in `cheque` parameter for `auth`, `capture`, `sale` operations.
+* when using QIWI PAY WPF redirect - in `merchant_cheque` parameter
+* when using QIWI PAY API - in `cheque` parameter for `auth`, `capture`, `sale` operations.
 
-Receipt's JSON structure have to be compressed by DEFLATE algorithm according to [RFC1951](http://www.ietf.org/rfc/rfc1951.txt), then transformed to ZLIB format by [RFC1950](http://www.ietf.org/rfc/rfc1950.txt) and BASE64-encoded.
+JSON structure of a receipt have to be compressed by DEFLATE algorithm according to [RFC1951](http://www.ietf.org/rfc/rfc1951.txt), then transformed to ZLIB format by [RFC1950](http://www.ietf.org/rfc/rfc1950.txt) and BASE64-encoded.
   
 <aside class="notice">
 When your account is in <a href="#test_mode">test mode</a>, the receipt will be processed in test environment.
@@ -987,7 +1171,7 @@ sign | string(64) | - | Checksum (signature) of the request
 RSP should verify request signature (`sign` parameter) to minimize possible fraud notifications.
 
 <aside class="notice">
-Signature algorithm coincides with ordinary QiwiPay requests, though only the parameters marked above with a plus sign in <i>Used for signature</i> column are taken.
+Signature algorithm coincides with ordinary QIWI PAY requests, though only the parameters marked above with a plus sign in <i>Used for signature</i> column are taken.
 </aside>
 
 To guarantee QIWI origin of the notifications, accept only these IP addresses related to QIWI:
@@ -1153,7 +1337,7 @@ Error code | Name | Description
 
 Use [production URLs](#urls) for testing purposes.
 
-By default, for each new RSD `merchant_site` is created in QiwiPay system in test environment only. You can ask your support manager to transfer any of your  `merchant_site` to test environment, or add new `merchant_site` in test environment.
+By default, for each new RSP a `merchant_site` record is created in QIWI PAY service in test environment only. You can ask your support manager to transfer any of your  `merchant_site` to test environment, or add new `merchant_site` in test environment.
 
 * To make tests for payment operations, you may use any card number corresponded to Luhn algorithm.
 * In test environment, you may use only ruble (643 code) for the currency.
