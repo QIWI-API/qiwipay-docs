@@ -49,7 +49,7 @@ QIWI PAY supports the following operations: payment processing, a two-step payme
 You can use one of the following integration methods on QIWI PAY:
 
 * QIWI PAY WPF - a web payment form on QIWI side. Quick and easy solution for accepting payments with limited functions (only payment transactions).
-* QIWI PAY API - fully functional REST-based API for making card payments. All requests are POST-type and the parameters are in JSON body. RSP implements only the Payment Form Interface.
+* QIWI PAY API - fully functional REST-based API for making card payments. All requests are POST-type and the parameters are in JSON body, as well as the responses. RSP implements only the Payment Form Interface.
 
 <aside class="success">
 QIWI PAY API requests with full card numbers are allowed by PCI DSS-certified merchants only, as Card Data are processed on the merchant's side.
@@ -97,8 +97,8 @@ Financial operation means that there will be cash flows on bank accounts.
 
 Two payment flows can be used in QIWI PAY:
 
-* One-step - `sale` operation
-* Two-step - `auth` operation -> `capture` operation
+* [One-step](#onestep) - `sale` operation
+* [Two-step](#twostep) - `auth` operation -> `capture` operation
 
 As a rule, two-step scenario is used when RSP makes verification of service availability after payment is made. Between `auth` operation and `capture` operation, RSP can make `reversal` operation which is not a financial one.
 
@@ -108,10 +108,6 @@ To make sure you know which operation may be applied, check transaction status a
 
 <aside class="warning">
 The longest period between <code>auth</code> and <code>capture</code> operations is 72 hours. Therefore, if no <code>capture</code> operation comes within 72 hours from RSP since <code>auth</code> is received, it will be performed anyway. 
-</aside>
-
-<aside class="notice">
-Only the first operation of the two-step flow  (<code>auth</code>) is used in QIWI PAY WPF.
 </aside>
 
 ## 3DS {#threeds}
@@ -240,6 +236,10 @@ To redirect, use standard web form HTTP POST data request.
 
 No authorization is required for RSP.
 
+<aside class="notice">
+In case of the two-step flow, use only the first operation (<code>auth</code>).
+</aside>
+
 Use the following form fields for payment operations. All fields not specified by the customer should be with `hidden` type.
 
 Parameter|Required|Data type|Description
@@ -280,9 +280,9 @@ QIWI PAY API authorizes the request by RSP client certificate validation. Certif
 To obtain certificate, please submit certificate request in .csr PKCS#10 format to QIWI Support (bss@qiwi.com).
 </aside>
 
-## Payment Flow
+## Payment Flow {#flows}
 
-### One-step payment flow (`sale` operation)
+### One-step payment flow {#onestep}
 
 <!--img src="/images/api_sale_en.png" class="image" /-->
 
@@ -330,7 +330,7 @@ deactivate Merchant
 </div>
 
 
-### Two-step payment flow (`auth`, `capture` operations)
+### Two-step payment flow {#twostep}
 
 <!--img src="/images/api_auth_en.png" class="image" /-->
 
@@ -875,10 +875,6 @@ order_id|No|string(256)|Unique order ID assigned by RSP system
   "error_code": 0
 }
 ~~~
-
-<aside class="warning">
-Response body is returned as JSON Array
-</aside>
 
 Parameter|Data type|Description
 --------|-------|----------|--------
