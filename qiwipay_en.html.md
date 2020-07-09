@@ -31,7 +31,7 @@ search: true
  *[REST]: Representational State Transfer -  a software architectural pattern for Network Interaction between distributed application components
  *[JSON]: JavaScript Object Notation - a lightweight data-interchange format based on JavaScript
  *[Luhn]: Luhn Algorithm - a checksum formula used for verifying and validating identification numbers against accidental errors
- *[PKCS#10]:  [RFC2986](https://tools.ietf.org/html/rfc2986) Certificate requests standard
+ *[PKCS#10]: RFC2986 Certificate requests standard
  *[HTTPS]: **HTTP** protocol extension to encrypt and enforce security. In HTTPS protocol, data transfer over SSL and TLS cryptographic protocols. In contrast with HTTP on port 80, the TCP 443 port is used by default for HTTPS
 
 <!-- *[MPI]: Merchant Plug-In - a module integrated into QIWI PAY applications to process authentication transactions-->
@@ -483,7 +483,7 @@ cheque|No|string|[Receipt data](#cheque)
 }
 ~~~
 
-Parameter|Data type|Description
+Field|Data type|Description
 --------|----------|--------
 txn_id | integer | Transaction ID
 txn_status | integer | [Transaction status](#txn_status)
@@ -515,7 +515,7 @@ is_test | string(4) | Presence of this parameter with `true` value indicates tha
 }
 ~~~
 
-Parameter|Data type|Description
+Field|Data type|Description
 --------|----------|--------
 txn_id | integer | Transaction ID
 txn_status | integer | [Transaction status](#txn_status)
@@ -573,7 +573,7 @@ sign | Yes | string(64) | [Checksum of the request's parameters](#sign)
 }
 ~~~
 
-Parameter|Data type|Description
+Field|Data type|Description
 --------|----------|--------
 txn_id | integer | Transaction ID
 txn_status | integer | [Transaction status](#txn_status)
@@ -625,7 +625,7 @@ sign | Yes | string(64) | [Checksum of the request's parameters](#sign)
 }
 ~~~
 
-Parameter|Data type|Description
+Field|Data type|Description
 --------|----------|--------
 txn_id | integer | Transaction ID
 txn_status | integer | [Transaction status](#txn_status)
@@ -671,7 +671,7 @@ cheque|No|string|[Receipt data](#cheque)
 }
 ~~~
 
-Parameter|Data type|Description
+Field|Data type|Description
 --------|----------|--------
 txn_id | integer | Transaction ID
 txn_status | integer | [Transaction status](#txn_status)
@@ -718,7 +718,7 @@ cheque|No|string|[Receipt data](#cheque)
 }
 ~~~
 
-Parameter|Data type|Description
+Field|Data type|Description
 --------|----------|--------
 txn_id | integer | Transaction ID
 txn_status | integer | [Transaction status](#txn_status)
@@ -791,7 +791,7 @@ cheque|No|string|[Receipt data](#cheque)
 }
 ~~~
 
-Parameter|Data type|Description
+Field|Data type|Description
 --------|----------|--------
 txn_id | integer | Transaction ID
 txn_status | integer | [Transaction status](#txn_status)
@@ -876,7 +876,7 @@ order_id|No|string(256)|Unique order ID assigned by RSP system
 }
 ~~~
 
-Parameter|Data type|Description
+Field|Data type|Description
 --------|-------|----------|--------
 txn_id | integer | Transaction ID
 txn_status | integer | [Transaction status](#txn_status)
@@ -1132,7 +1132,7 @@ Certificate should be issued by any trusted center of certification (e.g. Comodo
 </aside>
 
 
-Parameter|Data type| Used for signature | Description
+Callback field|Data type| Used for signature | Description
 --------|----------|------------------|---------
 txn_id | integer | + | Transaction ID
 txn_status | integer | + | [Transaction status](#txn_status)
@@ -1164,7 +1164,7 @@ card_token | string(40) | - |Card token (if tokenization is enabled for the merc
 card_token_expire | YYYY-MM-DDThh:mm:ss±hh:mm | - |Expiry date for the card token (if tokenization is enabled for the merchant site)
 sign | string(64) | - | Checksum (signature) of the request
 
-RSP should verify request signature (`sign` parameter) to minimize possible fraud notifications.
+To minimize possible fraud notifications, RSP should verify callback signature located in `sign` field.
 
 <aside class="notice">
 Signature algorithm coincides with ordinary QIWI PAY requests, though only the parameters marked above with a plus sign in <i>Used for signature</i> column are taken.
@@ -1223,6 +1223,18 @@ Status <i>2</i> and higher means that funds are authorized and you may already p
 </aside>
 
 # Errors Description {#errors}
+
+## Response with errors
+
+Response with errors has the following structure:
+
+Field | Type | Description
+-----|-------|---------
+error_code | Number | [Error code](#codes)
+error_message | String | Error description
+errors| Array of Objects | Detailed description of errors
+errors[].field | String | Name of the request's parameter caused the error
+errors[].message | String | Error text description
 
 >Request
 
@@ -1285,6 +1297,8 @@ Status <i>2</i> and higher means that funds are authorized and you may already p
 }
 
 ~~~
+
+## Error codes {#codes}
 
 Error code | Name | Description
 ---------- | -------- | --------
