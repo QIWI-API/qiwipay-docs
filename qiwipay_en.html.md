@@ -985,6 +985,24 @@ flight_number|Y|string(5)|Flight number, digits only
 
 # Receipt Info {#cheque}
 
+According to Russian Federation law (54-FZ), every merchant should provide online receipts for clients due to tax regulation. QIWI PAY API provides the service for it.
+
+Follow the steps to send receipt for the transaction:
+
+1. Prepare JSON [object of the receipt](#json_receipt)
+2. Compress the object by DEFLATE algorithm according to [RFC1951](http://www.ietf.org/rfc/rfc1951.txt)
+3. Transform the result to ZLIB format by [RFC1950](http://www.ietf.org/rfc/rfc1950.txt)
+4. Send BASE64-encoded obtained string:
+
+    * when using QIWI PAY WPF redirect - in `merchant_cheque` parameter
+    * when using QIWI PAY API - in `cheque` parameter for `auth`, `capture`, `sale` operations.
+  
+<aside class="notice">
+When your account is in <a href="#test_mode">test mode</a>, the receipt will be processed in test environment.
+</aside>
+
+### JSON description {#json_receipt}
+
 ~~~json
 {
   "seller_id" : 3123011520,
@@ -1039,21 +1057,6 @@ Output:
 eJyljk0KwjAQRveeImRdtEl1oSvvIVJCGjHQNrWZgqUUFG+iFyi6FDxDeiOT+LcQV25m8d58800zQAhrkaaijGWC0QxFhEYhIRMaBs7xtdhUIoa6EM6SB6w0qMxGuMqBcXAGr5SaJypjMh9CmmC/CGwb61qDyD7hQmkJUuXaoYUlCDV+WrepWA4Saqdo8KJFKblvjygdTsdvbq87+gGJ0LyUhbvuXzJHczNn0/W7kTn1e3PtD+ZiOkSwT7TB73by3T4Jw/+r6bPazuWgvQNvoHPJ
 ~~~
 
-According to Russian Federation law (54-FZ), every merchant should provide online receipts for clients due to tax regulation. QIWI Pay provides the service for it.
-
-Receipt may be transferred two-ways:
-
-* when using QIWI PAY WPF redirect - in `merchant_cheque` parameter
-* when using QIWI PAY API - in `cheque` parameter for `auth`, `capture`, `sale` operations.
-
-JSON structure of a receipt have to be compressed by DEFLATE algorithm according to [RFC1951](http://www.ietf.org/rfc/rfc1951.txt), then transformed to ZLIB format by [RFC1950](http://www.ietf.org/rfc/rfc1950.txt) and BASE64-encoded.
-  
-<aside class="notice">
-When your account is in <a href="#test_mode">test mode</a>, the receipt will be processed in test environment.
-</aside>
-
-### JSON description
-
 Parameter|Required|Data type|Description
 --------|-------|----------|--------
 seller_id|Y|decimal|Organization TIN (taxpayer identification number)
@@ -1073,7 +1076,6 @@ payment_subject|Y|decimal|Payment subject (tag 1212 in the tax document):<br>`1`
 # Signature of the Request {#sign}
 
 ~~~java
-
 public String generateSignature(String data, String secret) {
     try {
         byte[] secretBytes = secret.getBytes("UTF-8");
@@ -1088,7 +1090,6 @@ public String generateSignature(String data, String secret) {
 }
 
 sign = generateSignature("7.00|643|555|3","secret_key");
-
 ~~~
 
 >For parameters string amount\|currency\|merchant_site\|opcode
@@ -1226,15 +1227,6 @@ Status <i>2</i> and higher means that funds are authorized and you may already p
 
 ## Response with errors
 
-Response with errors has the following structure:
-
-Field | Type | Description
------|-------|---------
-error_code | Number | [Error code](#codes)
-error_message | String | Error description
-errors| Array of Objects | Detailed description of errors
-errors[].field | String | Name of the request's parameter caused the error
-errors[].message | String | Error text description
 
 >Request
 
@@ -1295,8 +1287,17 @@ errors[].message | String | Error text description
   "error_message":"Parsing error",
   "error_code":8006
 }
-
 ~~~
+
+Response with errors has the following structure:
+
+Field | Type | Description
+-----|-------|---------
+error_code | Number | [Error code](#codes)
+error_message | String | Error description
+errors| Array of Objects | Detailed description of errors
+errors[].field | String | Name of the request's parameter caused the error
+errors[].message | String | Error text description
 
 ## Error codes {#codes}
 
@@ -1345,13 +1346,13 @@ Error code | Name | Description
 
 # Test Data {#test_mode}
 
-Use [production URLs](#urls) for testing purposes.
-
 By default, for each new RSP a `merchant_site` record is created in QIWI PAY service in test environment only. You can ask your support manager to transfer any of your  `merchant_site` to test environment, or add new `merchant_site` in test environment.
 
 * To make tests for payment operations, you may use any card number corresponded to Luhn algorithm.
 * In test environment, you may use only ruble (643 code) for the currency.
 * CVV in testing mode may be arbitrary (3 digits).
+
+Use [production URLs](#urls) for sending test requests.
 
 <h4>Test card numbers</h4>
 <h4 id="visa">
