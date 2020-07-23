@@ -1228,7 +1228,7 @@ Status <i>2</i> and higher means that funds are authorized and you may already p
 ## Response with errors
 
 
->Request
+>Request with errors in card data
 
 ~~~json
 {
@@ -1267,7 +1267,7 @@ Status <i>2</i> and higher means that funds are authorized and you may already p
 }
 ~~~
 
-> Request
+> Request with empty txn_id
 
 ~~~json
 {

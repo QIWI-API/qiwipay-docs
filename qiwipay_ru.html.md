@@ -271,9 +271,6 @@ order_expire|Опционально|YYYY-MM-DDThh:mm:ss±hh:mm|Время ист
 callback_url|Опционально|string(256)|URL отправки [callback](#callback)
 success_url|Опционально|string(256)|URL для перенаправления Покупателя в случае успешной оплаты
 decline_url|Опционально|string(256)|URL для перенаправления Покупателя в случае не успешной оплаты
-apple_pay_encoded_payment_token|Опционально|string|Зашифрованные платежные данные от [Apple Pay](#apple)
-
-
 
 
 # QIWI PAY API {#api}
@@ -467,6 +464,7 @@ merchant_uid|Опционально|string(64)|Уникальный иденти
 modifiers|Опционально|string(64)|Модификатор типа транзакции AFT, MO/TO. Можно указывать несколько модификаторов через запятую. Возможные варианты: aft, moto.
 callback_url|Опционально|string(256)|URL отправки [callback](#callback)
 cheque|Опционально|string|[Данные для кассового чека по 54-ФЗ](#cheque)
+apple_pay_encoded_payment_token|Опционально|string|Зашифрованные платежные данные от [Apple Pay](#apple)
 
 
 ### Ответ на операцию покупки в случае не 3DS операции
