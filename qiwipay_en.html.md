@@ -69,7 +69,7 @@ QIWI PAY API requests with full card numbers are allowed by PCI DSS-certified me
 
 # Operations {#opcode}
 
-To indicate which operation is performed, you need to specify Operation code (Op.Code) in each request to API or on loading WPF pay form. Operation code should be in each RSP request to API or to WPF form payload.
+To indicate which operation is performed, you need to specify Operation code in `opcode` parameter of each request to API or on loading WPF pay form.
 
 The following operations are accessible through QIWI PAY.
 
@@ -462,7 +462,7 @@ order_expire|No|YYYY-MM-DDThh24:mm:ss|Order expiration date by ISO8601
 callback_url|No|string(256)|[Callback URL](#callback)
 cheque|No|string|[Receipt data](#cheque)
 
-### Response for card with no 3DS
+### Response for card with no 3DS {#sale_no3ds}
 
 ~~~json
 {
@@ -501,7 +501,7 @@ auth_code | string(6) | Authorization code
 eci | string(2) | Electronic Commerce Indicator
 is_test | string(4) | Presence of this parameter with `true` value indicates that transaction is processed in [testing mode](#test_mode) and no card debiting is made
 
-### Response for card with 3DS
+### Response for card with 3DS {#sale_3ds}
 
 ~~~json
 {
@@ -905,6 +905,128 @@ cf4|string(256)|Arbitrary information about the operation, such as list of servi
 cf5|string(256)|Arbitrary information about the operation, such as list of services
 product_name|string(25)|Service description for the Customer
 
+# Signature of the Request {#sign}
+
+~~~java
+public String generateSignature(String data, String secret) {
+    try {
+        byte[] secretBytes = secret.getBytes("UTF-8");
+        Mac hmac = Mac.getInstance("HmacSHA256");
+        SecretKeySpec secretKey = new SecretKeySpec(secretBytes, "HmacSHA256");
+        hmac.init(secretKey);
+        byte[] signBytes = hmac.doFinal(data.getBytes("UTF-8"));
+        return Utils.bytesToHex(signBytes);
+    } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException e) {
+        throw new SignatureException("Cannot calculate signature", e);
+    }
+}
+~~~
+
+>For parameters string amount\|currency\|merchant_site\|opcode
+
+~~~java
+sign = generateSignature("7.00|643|555|3","secret_key");
+
+Output:
+9c878bfbf9baa30c26c8c6206976fc3ed2c036afeabf352f8a045fe331d42d7e
+~~~
+
+~~~php
+<?php
+$hmac = hash_hmac('sha256','7.00|643|555|3','secret_key');
+?>
+
+Output:
+9c878bfbf9baa30c26c8c6206976fc3ed2c036afeabf352f8a045fe331d42d7e
+~~~
+
+~~~shell
+user@server:~$ echo -n "7.00|643|555|3" | openssl dgst -sha256  -hmac "secret_key"
+
+(stdin)= 9c878bfbf9baa30c26c8c6206976fc3ed2c036afeabf352f8a045fe331d42d7e
+~~~
+
+You should sign all parameters in each operation request. Add the signature in `sign` parameter for each request.
+
+To calculate signature, use HMAC algorithm with SHA256-hash function. For this, you need `secret key` parameter obtained with other integration settings.
+
+* Separator is `|`.
+* Parameters are in alphabetical order, i.e. for parameters `amount|currency|merchant_site|opcode` string for signature verification is: `15.00|643|12345|1`.
+* Signed are all the parameters in the request.
+* Do not include parameters with empty values
+* Only values are signed, not their names.
+
+# Payment Notification {#callback}
+
+There are two types of notification flow:
+
+* During payment processing, when card debit is confirmed and before showing status page or RSP response (depends on what flow is used, WPF or API).
+* On background, when payment processed.
+
+Notification goes to `callback_url` parameter from the original request, as a POST request with the following parameters.
+
+<aside class="success">
+Callback is sent by HTTPS protocol on 443 port only.
+Certificate should be issued by any trusted center of certification (e.g. Comodo, Verisign, Thawte etc)
+</aside>
+
+
+Callback field|Data type| Used for signature | Description
+--------|----------|------------------|---------
+txn_id | integer | + | Transaction ID
+txn_status | integer | + | [Transaction status](#txn_status)
+txn_type | integer | + | [Transaction type](#txn_type)
+txn_date | YYYY-MM-DDThh:mm:ss±hh:mm | - | Transaction date, by ISO8601 with time zone
+error_code | integer | + | [System error code](#errors)
+pan | string(19) | - | Customer Card number (PAN), first six and last four digits are unmasked
+amount | decimal | + | Amount to debit
+currency | integer | + | Operation currency by ISO 4217
+auth_code | string(6) | - | Authorization code
+eci | string(2) | - | Electronic Commerce Indicator
+card_name | string(64) | - | Cardholder name as printed on the card (Latin letters)
+card_bank | string(64) | - | Issuing Bank
+order_id | string(256) | - | Unique order ID assigned by RSP system. Returned if sent in the original request.
+ip | string(15) | + | Customer IP address
+email | string(64) | + | Customer E-mail
+country | string(3) | - | Customer Country by ISO 3166-1
+city | string(64) | - | Customer City of residence
+region | string(6) | - | Customer Region (geo code) by ISO 3166-2
+address | string(64) | - | Customer Address of residence
+phone | string(15) | - | Customer contact phone number
+cf1 | string(256) | - | Arbitrary information about the operation, such as list of services
+cf2 | string(256) | - | Arbitrary information about the operation, such as list of services
+cf3 | string(256) | - | Arbitrary information about the operation, such as list of services
+cf4 | string(256) | - | Arbitrary information about the operation, such as list of services
+cf5 | string(256) | - | Arbitrary information about the operation, such as list of services
+product_name | string(25) | - | Service description for the Customer
+card_token | string(40) | - |Card token (if tokenization is enabled for the merchant site)
+card_token_expire | YYYY-MM-DDThh:mm:ss±hh:mm | - |Expiry date for the card token (if tokenization is enabled for the merchant site)
+sign | string(64) | - | Checksum (signature) of the request
+
+To minimize possible fraud notifications, RSP should verify callback signature located in `sign` field.
+
+<aside class="notice">
+Signature algorithm coincides with ordinary QIWI PAY requests, though only the parameters marked above with a plus sign in <i>Used for signature</i> column are taken.
+</aside>
+
+To guarantee QIWI origin of the notifications, accept only these IP addresses related to QIWI:
+
+* 79.142.16.0/20
+* 195.189.100.0/22
+* 91.232.230.0/23
+* 91.213.51.0/24
+
+Notification is treated as successfully delivered when RSP server responds with HTTP code `200 OK`.
+So far, during the first 24 hours after the operation, the system will continue to deliver notification with incremental time intervals until RSP server responds with HTTP code `200 OK`.
+
+<aside class="notice">
+Due to any reason, if RSP accepts notification without HTTP code <i>200 OK</i> then the same transaction on the repeated notification should not be treated as the new one.
+</aside>
+
+<aside class="warning">
+RSP is solely responsible for possible financial loss when <code>sign</code> is not verified for the illegal notifications.
+</aside>
+
 # Industry Data {#industry_data}
 
 ## Avia
@@ -1072,122 +1194,132 @@ description|Y|string(128)|Goods description
 payment_method|Y|decimal|Cash type (tag 1214 in the tax document):<br>`1` – payment in advance 100%. Full payment in advance before commodity provision<br>`2`  – payment in advance. Partial payment before commodity provision<br>`3` – prepayment<br>`4` – full payment, taking into account prepayment, with commodity provision<br>`5` – partial payment and credit payment. Partial payment for the commodity at the moment of delivery, with future credit payment.<br>`6`  – credit payment. Commodity is delivered with no payment at the moment and future credit payment is expected.<br>`7` – payment for the credit. Commodity payment after its delivery with future credit payment.
 payment_subject|Y|decimal|Payment subject (tag 1212 in the tax document):<br>`1` – commodity except excise commodities (name and other properties describing the commodity).<br>`2` – excise commodity (name and other properties describing the commodity).<br>`3` – work (name and other properties describing the work). .<br>`4` – service (name and other properties describing the service).<br>`5` – gambling rate (in any gambling activities).<br>`6` – gambling prize payment (in any gambling activities)в.<br>`7` – lottery ticket payment (in accepting payments for lottery tickets, including electronic ones, lottery stakes in any lottery activities).<br>`8` – lottery prize payment (n any lottery activities). <br>`9` – provision of rights to use intellectual activity results.<br>`10` – payment (advance, pre-payment, deposit, partial payment, credit, fine, bonus, reward, or any similar payment subject).<br>`11` – agent's commission (in any fee to payment agent, bank payment agent, commissioner or other agent service).<br>`12` – multiple payment subject (in any payment constituent subject to any of the above).<br>`13` – other payment subject not related to any of the above.
 
+# Apple Pay {#applepay}
 
-# Signature of the Request {#sign}
+Apple Pay allows customers to pay for purchases on the site in one touch, without entering the card data. The technology works in mobile apps and the Safari browser on iPhone, iPad, Apple Watch and MacBook. To enable the Apple Pay payment method, you should contact your accompanying manager.
 
-~~~java
-public String generateSignature(String data, String secret) {
-    try {
-        byte[] secretBytes = secret.getBytes("UTF-8");
-        Mac hmac = Mac.getInstance("HmacSHA256");
-        SecretKeySpec secretKey = new SecretKeySpec(secretBytes, "HmacSHA256");
-        hmac.init(secretKey);
-        byte[] signBytes = hmac.doFinal(data.getBytes("UTF-8"));
-        return Utils.bytesToHex(signBytes);
-    } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException e) {
-        throw new SignatureException("Cannot calculate signature", e);
-    }
+You'll need to integrate with Apple yourself. This integration will allow you to verify the TSP website and receive payment data of the user.
+
+Requirements for TSP to integrate Apple Pay on your web page:
+
+* Developer account in Apple Developer Program
+* Use of HTTPS on the Apple Pay page, TLS 1.2 support, valid SSL certificate
+* Compliance with [Apple's guidelines](https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/) on Apple Pay on websites
+* Using the framework [Apple Pay JS API](https://developer.apple.com/documentation/apple_pay_on_the_web/apple_pay_js_api)
+
+For more information on integration, please visit [Apple's website](https://developer.apple.com/apple-pay/implementation/).
+
+## How to send a payment {#qiwipay_apple}
+
+> Sending Apple Data Example
+
+~~~json
+{
+  "opcode":1,
+  "merchant_site":"123321",
+  "order_id":500989,
+  "apple_pay_encoded_payment_token":"eNrVV1mPszgW\/S\/1mpGKJSShpX6wgbAEk7AvKmnEFghLSCDghFb\/93EqX31L9zzMvIw0kSLgYpu7nHt8\/MfbJX60+fkmxrf47bc\/3qa8H07d+e23N0n450S\/=",
+  "currency":643,
+  "amount":"100.00",
+  "phone":"79111111111",
+  "sign":"d96af29003958983b7ca158083d4c22033eb1a809d4c6"
 }
-
-sign = generateSignature("7.00|643|555|3","secret_key");
 ~~~
 
->For parameters string amount\|currency\|merchant_site\|opcode
+The process of making an Apple Pay payment in the QIWI PAY API consists of three steps:
 
-~~~php
-<?php
-$hmac = hash_hmac('sha256','7.00|643|555|3','secret_key');
-?>
+1. Creating an Apple Pay payment session and validating TSP in Apple Pay
+2. Getting encrypted payment data from Apple Pay
+3. Sending a request for a write-off to QIWI
 
-Output:
-9c878bfbf9baa30c26c8c6206976fc3ed2c036afeabf352f8a045fe331d42d7e
+Currently, when Apple Pay payments are processing, the purchase operation is supported by the the following [Operation codes](#sale_types): `sale` (code `1`) and `auth` (code `3`).
+
+To send payment data to QIWI, you must pass the `apple_pay_encoded_payment_token` parameter containing Apple's encrypted payment data in [the request](#sale). The value of the parameter is an encoded string. This parameter (like all other field values in the JSON-body of the request) must be involved in the calculation of the [signature of the request](#sign) (`sign` parameter).
+
+The value of the `apple_pay_encoded_payment_token` field is calculated by the following algorithm:
+ 
+`value = b64_encode_bytes_to_string (compress_bytes_with_deflate_alg (to_bytes (json)))`
+
+~~~json
+{
+  "paymentData": {
+    "data": "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZX...........................",
+    "header": {
+      ...
+    },
+    "signature": "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZX...........................",
+    "version": "EC_v1"
+}
+}
 ~~~
 
-~~~shell
-user@server:~$ echo -n "7.00|643|555|3" | openssl dgst -sha256  -hmac "secret_key"
-(stdin)= 9c878bfbf9baa30c26c8c6206976fc3ed2c036afeabf352f8a045fe331d42d7e
+Here `json` is a JSON object. This object must contain all the fields that Apple receives in accordance with the "Top-Level Structure" structure. See [Apple documentation](https://developer.apple.com/library/archive/documentation/PassKit/Reference/PaymentTokenJSON/PaymentTokenJSON.html#//apple_ref/doc/uid/TP40014929-CH8-SW2).
+
+**Step 1** (`to_bytes`): The `json` object is converted into an array of bytes in accordance with the UTF-8 encoding.
+
+**Step 2** (`compress_bytes_with_deflate_alg`): The bytes received in the previous step are compressed by the [DEFLATE algorithm](https://en.wikipedia.org/wiki/Deflate). When compressing using the DEFLATE algorithm, you must follow the RFC1950 specification and ensure that the `zlib header` is recorded at the beginning of the compressed stream.
+
+**Step 3** (`b64_encode_bytes_to_string`): The bytes received in the previous step are encoded in the [base64 format](https://ru.wikipedia.org/wiki/Base64).
+ 
+As a result of all the steps, we get a string with an encoded value, which is framed in the value of the `apple_pay_encoded_payment_token` field.
+
+# Google Pay&trade; Integration {#google}
+
+This section describes Google Pay&trade; integration process into merchant's Payment Form in the QIWI PAY API framework. Payments from Visa and MasterCard payment cards are supported.
+
+1. Implement the requirements of [Google Pay&trade; WEB](https://developers.google.com/pay/api/web) for accepting encrypted payment data. Check [Integration checklist](https://developers.google.com/pay/api/web/guides/test-and-deploy/integration-checklist) and [Brand guidelines](https://developers.google.com/pay/api/web/guides/brand-guidelines).
+2. Implement the QIWI PAY [Google data sending requirements](#qiwipay_google). 
+3. [Request production access](https://developers.google.com/pay/api/web/guides/test-and-deploy/request-prod-access). Indicate the following data in the request:
+    * Tokenization Method — `Gateway`
+    * Payment Processor or Gateway — `qiwi`
+    * Merchant Name — provided by QIWI Support
+4. Google tests your Payment Form and approves the launch. 
+
+## How to send data to Google {#qiwipay_google}
+
+QIWI PAY API supports Google Pay&trade; payment processing for `sale` (opcode: 1) and `auth` (opcode: 3) [sale operations](#sale).
+
+~~~json
+{
+  "opcode": 1,
+  "merchant_site": "123456",
+  "order_id": 1969843,
+  "google_pay_encoded_payment_token": "eJxVUtuK2zAQfd+vCHpeWN2sy0If3GShS9mS0hb8YChjabx........",
+  "currency": 643,
+  "amount": "1000.00",
+  "country": "RUS",
+  "ip": "1.2.3.4",
+  "user_timedate": "2020-01-29T14:14:47+00:00",
+  "product_name": "Payment amount 100000 copecs",
+  "sign": "de4f8390ee8afb05797057ca79d20a416512f..."
+}
 ~~~
 
-You should sign all parameters in each operation request. Add the signature in `sign` parameter for each request.
+Add `google_pay_encoded_payment_token` field to each sale request. Field value is an encoded string and it should participate in [sign](#sign) verification.
 
-To calculate signature, use HMAC algorithm with SHA256-hash function. For this, you need `secret key` parameter obtained with other integration settings.
+The field value is calculated by the following algorithm:
 
-* Separator is `|`.
-* Parameters are in alphabetical order, i.e. for parameters `amount|currency|merchant_site|opcode` string for signature verification is: `15.00|643|12345|1`.
-* Signed are all the parameters in the request.
-* Do not include parameters with empty values
-* Only values are signed, not their names.
-
-# Payment Notification {#callback}
-
-There are two types of notification flow:
-
-* During payment processing, when card debit is confirmed and before showing status page or RSP response (depends on what flow is used, WPF or API).
-* On background, when payment processed.
-
-Notification goes to `callback_url` parameter from the original request, as a POST request with the following parameters.
-
-<aside class="success">
-Callback is sent by HTTPS protocol on 443 port only.
-Certificate should be issued by any trusted center of certification (e.g. Comodo, Verisign, Thawte etc)
-</aside>
-
-
-Callback field|Data type| Used for signature | Description
---------|----------|------------------|---------
-txn_id | integer | + | Transaction ID
-txn_status | integer | + | [Transaction status](#txn_status)
-txn_type | integer | + | [Transaction type](#txn_type)
-txn_date | YYYY-MM-DDThh:mm:ss±hh:mm | - | Transaction date, by ISO8601 with time zone
-error_code | integer | + | [System error code](#errors)
-pan | string(19) | - | Customer Card number (PAN), first six and last four digits are unmasked
-amount | decimal | + | Amount to debit
-currency | integer | + | Operation currency by ISO 4217
-auth_code | string(6) | - | Authorization code
-eci | string(2) | - | Electronic Commerce Indicator
-card_name | string(64) | - | Cardholder name as printed on the card (Latin letters)
-card_bank | string(64) | - | Issuing Bank
-order_id | string(256) | - | Unique order ID assigned by RSP system. Returned if sent in the original request.
-ip | string(15) | + | Customer IP address
-email | string(64) | + | Customer E-mail
-country | string(3) | - | Customer Country by ISO 3166-1
-city | string(64) | - | Customer City of residence
-region | string(6) | - | Customer Region (geo code) by ISO 3166-2
-address | string(64) | - | Customer Address of residence
-phone | string(15) | - | Customer contact phone number
-cf1 | string(256) | - | Arbitrary information about the operation, such as list of services
-cf2 | string(256) | - | Arbitrary information about the operation, such as list of services
-cf3 | string(256) | - | Arbitrary information about the operation, such as list of services
-cf4 | string(256) | - | Arbitrary information about the operation, such as list of services
-cf5 | string(256) | - | Arbitrary information about the operation, such as list of services
-product_name | string(25) | - | Service description for the Customer
-card_token | string(40) | - |Card token (if tokenization is enabled for the merchant site)
-card_token_expire | YYYY-MM-DDThh:mm:ss±hh:mm | - |Expiry date for the card token (if tokenization is enabled for the merchant site)
-sign | string(64) | - | Checksum (signature) of the request
-
-To minimize possible fraud notifications, RSP should verify callback signature located in `sign` field.
+`b64_encode_bytes_to_string (compress_bytes_with_deflate_alg (to_bytes (JSON)))`
 
 <aside class="notice">
-Signature algorithm coincides with ordinary QIWI PAY requests, though only the parameters marked above with a plus sign in <i>Used for signature</i> column are taken.
+<code>JSON</code> object structure is described in <a href="https://developers.google.com/pay/api/web/guides/resources/payment-data-cryptography">Payment data cryptography for merchants</a> document.
 </aside>
 
-To guarantee QIWI origin of the notifications, accept only these IP addresses related to QIWI:
 
-* 79.142.16.0/20
-* 195.189.100.0/22
-* 91.232.230.0/23
-* 91.213.51.0/24
+**Step 1** (`to_bytes`): convert `JSON` object to bytes array UTF-8 encoded.
+ 
+**Step 2** (`compress_bytes_with_deflate_alg`): compress the bytes from Step 1 by DEFLATE algorithm. You should follow the specification [RFC1950](http://www.ietf.org/rfc/rfc1950.txt) and provide `zlib header` record into the beginning of compressed data pipe.
+ 
+**Step 3** (`b64_encode_bytes_to_string`): `base64` encode the bytes from Step2.
 
-Notification is treated as successfully delivered when RSP server responds with HTTP code `200 OK`.
-So far, during the first 24 hours after the operation, the system will continue to deliver notification with incremental time intervals until RSP server responds with HTTP code `200 OK`.
+As a result of these Steps, you obtain a string with encoded value which is the required `google_pay_encoded_payment_token` field value.
 
-<aside class="notice">
-Due to any reason, if RSP accepts notification without HTTP code <i>200 OK</i> then the same transaction on the repeated notification should not be treated as the new one.
-</aside>
+## Response to sale operation
 
-<aside class="warning">
-RSP takes all responsibilities for possible financial loss when <code>sign</code> is not verified for the illegal notifications.
-</aside>
+If Google Pay&trade; payment token contained 3DS cryptogram, then QIWI PAY API response completely corresponds to the [sale operation response](#sale_no3ds) in case of no 3DS operation.
+
+If Google Pay&trade; payment token does not contain 3DS cryptogram, then QIWI PAY API response completely corresponds to the [sale operation response](#sale_3ds) when the user needs 3DS authentication. 
+
 
 # Transaction Types {#txn_type}
 
@@ -1348,9 +1480,9 @@ Error code | Name | Description
 
 By default, for each new RSP a `merchant_site` record is created in QIWI PAY service in test environment only. You can ask your support manager to transfer any of your  `merchant_site` to test environment, or add new `merchant_site` in test environment.
 
-* To make tests for payment operations, you may use any card number corresponded to Luhn algorithm.
-* In test environment, you may use only ruble (643 code) for the currency.
-* CVV in testing mode may be arbitrary (3 digits).
+* To make tests for payment operations, you may use any card number satisfying to Luhn algorithm.
+* In test environment, you may use only ruble (`643` code) for the `currency` parameter.
+* CVV for payments in test environment may be arbitrary (any 3 digits).
 
 Use [production URLs](#urls) for sending test requests.
 
