@@ -5,6 +5,8 @@ metatitle: QIWI PAY Reference
 
 metadescription: QIWI PAY service is intended for card payment operations. The service allows Retail Service Provider to accept secure payments from their clients.
 
+category: acquiring
+
 language_tabs:
   - json: JSON
   - php: PHP
@@ -84,8 +86,6 @@ Op.Code | QIWI PAY WPF | QIWI PAY API | Operation | Financial? | Description
 20 | - | + | payout | Y|Payout operation (OCT)
 30 | - | + | status | N|Operation status query
 40 | - | + | get_cards_by_token | N | Get linked cards list
-51 | - | + | mobile_auth_init | N | Prepare for auth request in case of two-step scenario (from RSP)
-52 | - | + | mobile_auth_card_data | N | Card data transfer to perform auth (from application)
 
 <aside class="notice">
 Financial operation means that there will be cash flows on bank accounts.
