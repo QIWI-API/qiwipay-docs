@@ -461,6 +461,9 @@ merchant_uid|No|string(64)|Unique Customer ID assigned by RSP system
 order_expire|No|YYYY-MM-DDThh24:mm:ss|Order expiration date by ISO8601
 callback_url|No|string(256)|[Callback URL](#callback)
 cheque|No|string|[Receipt data](#cheque)
+apple_pay_encoded_payment_token|No|string|Encrypted payment data [from Apple Pay](#applepay)
+wallet_type|No|string(50)|Type of a wallet to top up. Possible values: `QIWI`
+account_id|No|integer(50)|Number of a wallet to top up. **Required if wallet_type=QIWI is in the operation**
 
 ### Response for card with no 3DS {#sale_no3ds}
 
@@ -1238,7 +1241,7 @@ To send payment data to QIWI, you must pass the `apple_pay_encoded_payment_token
 
 The value of the `apple_pay_encoded_payment_token` field is calculated by the following algorithm:
  
-`value = b64_encode_bytes_to_string (compress_bytes_with_deflate_alg (to_bytes (json)))`
+`value = b64_encode_bytes_to_string (compress_bytes_with_zlib (to_bytes (json)))`
 
 ~~~json
 {
@@ -1253,13 +1256,38 @@ The value of the `apple_pay_encoded_payment_token` field is calculated by the fo
 }
 ~~~
 
+> Example of encoding Apple Pay payment token
+
+~~~python
+import zlib
+import base64
+
+token = 'Hello world'
+
+token_bytes = token.encode('utf-8')
+token_deflated = zlib.compress(token_bytes)
+token_base64 = base64.b64encode(token_deflated)
+token_result = token_base64.decode('utf-8')
+
+resp_base64 = token_result.encode('utf-8')
+resp_deflated = base64.b64decode(resp_base64)
+resp_bytes = zlib.decompress(resp_deflated)
+resp_token = resp_bytes.decode('utf-8')
+
+print('resp_token: ', resp_token)
+~~~
+
+~~~shell
+>> resp_token: 'Hello world'
+~~~
+
 Here `json` is a JSON object. This object must contain all the fields that Apple receives in accordance with the "Top-Level Structure" structure. See [Apple documentation](https://developer.apple.com/library/archive/documentation/PassKit/Reference/PaymentTokenJSON/PaymentTokenJSON.html#//apple_ref/doc/uid/TP40014929-CH8-SW2).
 
-**Step 1** (`to_bytes`): The `json` object is converted into an array of bytes in accordance with the UTF-8 encoding.
+**Step 1** (`to_bytes`) — The `json` object is converted into an array of bytes in accordance with the UTF-8 encoding.
 
-**Step 2** (`compress_bytes_with_deflate_alg`): The bytes received in the previous step are compressed by the [DEFLATE algorithm](https://en.wikipedia.org/wiki/Deflate). When compressing using the DEFLATE algorithm, you must follow the RFC1950 specification and ensure that the `zlib header` is recorded at the beginning of the compressed stream.
+**Step 2** (`compress_bytes_with_zlib`) — The bytes received in the previous step are compressed by the zlib library. When compressing, you must follow [the RFC1950 specification](http://www.ietf.org/rfc/rfc1950.txt) and ensure that the `zlib header` is recorded at the beginning of the compressed stream.
 
-**Step 3** (`b64_encode_bytes_to_string`): The bytes received in the previous step are encoded in the [base64 format](https://ru.wikipedia.org/wiki/Base64).
+**Step 3** (`b64_encode_bytes_to_string`) — The bytes received in the previous step are encoded in the [base64 format](https://ru.wikipedia.org/wiki/Base64).
  
 As a result of all the steps, we get a string with an encoded value, which is framed in the value of the `apple_pay_encoded_payment_token` field.
 
@@ -1295,22 +1323,47 @@ QIWI PAY API supports Google Pay&trade; payment processing for `sale` (opcode: 1
 }
 ~~~
 
+> Example of encoding Google Pay payment token
+
+~~~python
+import zlib
+import base64
+
+token = 'Hello world'
+
+token_bytes = token.encode('utf-8')
+token_deflated = zlib.compress(token_bytes)
+token_base64 = base64.b64encode(token_deflated)
+token_result = token_base64.decode('utf-8')
+
+resp_base64 = token_result.encode('utf-8')
+resp_deflated = base64.b64decode(resp_base64)
+resp_bytes = zlib.decompress(resp_deflated)
+resp_token = resp_bytes.decode('utf-8')
+
+print('resp_token: ', resp_token)
+~~~
+
+~~~shell
+>> resp_token: 'Hello world'
+~~~
+
 Add `google_pay_encoded_payment_token` field to each sale request. Field value is an encoded string and it should participate in [sign](#sign) verification.
 
 The field value is calculated by the following algorithm:
 
-`b64_encode_bytes_to_string (compress_bytes_with_deflate_alg (to_bytes (JSON)))`
+`b64_encode_bytes_to_string (compress_bytes_with_zlib (to_bytes (JSON)))`
 
 <aside class="notice">
 <code>JSON</code> object structure is described in <a href="https://developers.google.com/pay/api/web/guides/resources/payment-data-cryptography">Payment data cryptography for merchants</a> document.
 </aside>
 
 
-**Step 1** (`to_bytes`): convert `JSON` object to bytes array UTF-8 encoded.
+**Step 1** (`to_bytes`) — Convert `JSON` object to bytes array UTF-8 encoded.
  
-**Step 2** (`compress_bytes_with_deflate_alg`): compress the bytes from Step 1 by DEFLATE algorithm. You should follow the specification [RFC1950](http://www.ietf.org/rfc/rfc1950.txt) and provide `zlib header` record into the beginning of compressed data pipe.
+**Step 2** (`compress_bytes_with_zlib`) — Compress the bytes from Step 1 by zlib library. You should follow the specification [RFC1950](http://www.ietf.org/rfc/rfc1950.txt) and provide `zlib header` record into the beginning of compressed data pipe.
  
-**Step 3** (`b64_encode_bytes_to_string`): `base64` encode the bytes from Step2.
+**Step 3** (`b64_encode_bytes_to_string`) — `Base64` encode the bytes from Step2.
 
 As a result of these Steps, you obtain a string with encoded value which is the required `google_pay_encoded_payment_token` field value.
 
