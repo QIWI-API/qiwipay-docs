@@ -40,7 +40,7 @@ search: true
 
 # Introduction
 
-###### Last update: 2020-04-28 | [Edit on GitHub](https://github.com/QIWI-API/qiwipay-docs/blob/master/qiwipay_en.html.md)
+###### Last update: 2021-06-02 | [Edit on GitHub](https://github.com/QIWI-API/qiwipay-docs/blob/master/qiwipay_en.html.md)
 
 QIWI PAY service is intended for card payment operations. The service allows RSP to accept secure payments from their clients.
 
@@ -421,6 +421,7 @@ deactivate Merchant
   "cf5": "cf5",
   "callback_url": "http://domain.tld/callback_service",
   "product_name": "Flowers",
+  "receiver_name": "Ivanov, Ivan",
   "sign": "bb5c48ea540035e6b7c03c8184f74f09d26e9286a9b8f34b236b1bf2587e4268"
 }
 ~~~
@@ -464,6 +465,7 @@ cheque|No|string|[Receipt data](#cheque)
 apple_pay_encoded_payment_token|No|string|Encrypted payment data [from Apple Pay](#applepay)
 wallet_type|No|string(50)|Type of a wallet to top up. Possible values: `QIWI`
 account_id|No|integer(50)|Number of a wallet to top up. **Required if wallet_type=QIWI is in the operation**
+receiver_name|No|string(30)|Last and first name of the payment's receiver separated by `, ` (comma followed by space). Order matters: last name should be before first name.  Only Latin letters, digits, and symbols `_`, `-` (first name can be with spaces).
 
 ### Response for card with no 3DS {#sale_no3ds}
 
