@@ -50,8 +50,8 @@ QIWI PAY supports the following operations: payment processing, a two-step payme
 
 You can use one of the following integration methods on QIWI PAY:
 
-* QIWI PAY WPF - a web payment form on QIWI side. Quick and easy solution for accepting payments with limited functions (only payment transactions).
-* QIWI PAY API - fully functional REST-based API for making card payments. All requests are POST-type and the parameters are in JSON body, as well as the responses. RSP implements only the Payment Form Interface.
+* QIWI PAY WPF — a web payment form on QIWI side. Quick and easy solution for accepting payments with limited functions (only payment transactions).
+* QIWI PAY API — fully functional REST-based API for making card payments. All requests are POST-type and the parameters are in JSON body, as well as the responses. RSP implements only the Payment Form Interface.
 
 <aside class="success">
 QIWI PAY API requests with full card numbers are allowed by PCI DSS-certified merchants only, as Card Data are processed on the merchant's side.
@@ -97,8 +97,8 @@ Financial operation means that there will be cash flows on bank accounts.
 
 Two payment flows can be used in QIWI PAY:
 
-* [One-step](#onestep) - `sale` operation
-* [Two-step](#twostep) - `auth` operation -> `capture` operation
+* [One-step](#onestep) — `sale` operation
+* [Two-step](#twostep) — `auth` operation -> `capture` operation
 
 As a rule, two-step scenario is used when RSP makes verification of service availability after payment is made. Between `auth` operation and `capture` operation, RSP can make `reversal` operation which is not a financial one.
 
@@ -1110,6 +1110,140 @@ stopover_code|Y|string(1)|Stop-Over Code
 departure_date|Y|YYYY-MM-DDThh:mm:ss±hh:mm|Departure date, ISO8601 with time zone
 flight_number|Y|string(5)|Flight number, digits only
 
+
+# Safe Purchase {#safe_deal}
+
+Safe Purchase service from QIWI provides a transparent and reliable payment mechanism for work services without the risk of losing money for both the customer and the worker. To connect a Safe Purchase service, contact your support manager.
+
+There are two types of safe purchase:
+
+* With a payout on the QIWI wallet
+* With a payout on the cards.
+
+The operation is authorized by both the [QIWI PAY API](#api) and the [QIWI PAY WPF](#wpf).
+
+## Working with partial amounts {#safe_deal_subsums}
+
+> Case Of authorization
+
+~~~json
+{
+  "opcode": 1,
+  "merchant_uid": "10001",
+  "merchant_site": 555,
+  "pan": "41111111111111111",
+  "expiry": "1219",
+  "cvv2": "123",
+  "amount": "450.20",
+  "currency": 643,
+  "card_name": "cardholder name",
+  "order_id": "order1231231",
+  "cf1": "79323213232",
+  "cf2": "250.10;200.10",
+  "sign": "bb5c48ea540035e6b7c03c8184f74f09d26e"
+}
+~~~
+
+To use the protocol of a safe purchase, you need to divide the amount of authorization into partial amounts:
+
+* The partial amount of payouts,
+* The partial amount of the commissions.
+
+The partial amount of payouts is funds that will be paid to the worker at the end of a safe purchase.
+
+The partial amount of commissions is the amount of commissions of the Marketplace on which the transaction is performed, and QIWI. From this amount, QIWI will hold the commission for the operation service, and the remainder will be transferred to the Marketplace.
+
+The amounts are transmitted in the [authorization request](#sale) or on the [WPF calling](#redirect) in the `cf2` field separated by semicolon: 
+
+`"cf2": "<payout partial amount>; <commissions partial amount>"`
+
+<aside class="success">Amount of authorization (<code>amount</code> value) should equal the sum of its partial amounts. Example:<br><code>"amount": "500.00"</code><br><code>"cf2": "300.00; 200.00"</code>
+</aside>
+
+## Safe purchase with a QIWI wallet payout {#safe_deal_wallet}
+
+This type of safe purchase consists of two stages:
+
+* Authorization of charging funds through the request to [API](#sale) or by [calling WPF](#redirect-to-qiwi-pay-wpf) (Operation code `3`).
+* [Confirmation of the operation](#sale_confirm) (Operation code `5`).
+
+At each stage, be sure to specify the number of the QIWI Wallet in the `cf1` field of the request in the format
+
+`"cf1": "79111111111"`
+
+If the transaction is confirmed, the amount to be paid will automatically be credited to the QIWI Wallet specified in the request.
+
+<aside class="notice">Max waiting time between authorization and confirmation is 5 days</aside>
+
+> Case Of cancellation
+
+~~~json
+{
+  "opcode":6,
+  "merchant_site": 10001,
+  "txn_id": 181001,
+  "amount": "350.00",
+  "sign": "bb5c48ea540035e6b7c03c8184f74f09d26e9286a9b8f34b236b1bf2587e4268",
+  "cf2": "250.00;100.00"
+}
+~~~
+
+The transaction can be cancelled in full or in part only until the transaction is confirmed. To cancel, make a [Cancel request](#cancel) (Operation code `6`) and specify in the `cf2` field a partial amounts of the canceled transaction (in the same format as for authorization). 
+
+<aside class="success">Amount of cancel operation (<code>amount</code> value) should equal the sum of its partial amounts.</aside>
+
+## Safe purchase with a card payout {#safe_deal_card}
+
+This type of safe purchase consists of three stages:
+
+* Authorization of charging funds through the request to [API](#sale) or by [calling WPF](#redirect-to-qiwi-pay-wpf) (Operation codes `1`, `3`).
+* [Confirmation of the operation](#sale_confirm) (Operation Code `5`).
+* [Payout operation](#payout) (Operation Code `20`).
+
+> Payout Example
+
+~~~json
+{
+  "opcode": 20,
+  "merchant_site": "10001",
+  "merchant_uid": 555,
+  "card_token": "4d5b363e-a116-35f5-e053-6751080ac38e",
+  "txn_id":182001,  "amount": "4678.50",
+  "currency": 643,
+  "card_name": "cardholder name",
+  "order_id": "order1231231",
+  "callback_url": "http://domain.tld/callback_service",
+  "success_url": "http://domain.tld/success",
+  "decline_url": "http://domain.tld/decline",
+  "product_name": "Winning Payout"
+  "sign": "bb5c48ea540035e6b7c03c8184f74f09d26e..........................."
+}
+~~~
+
+Once the operation is confirmed, there are 30 days to make the payment operation. Funds are deposited on the recipient's card within three days.
+
+<aside class="warning">Organizations without PCI DSS can only make payments using card tokens.</aside>
+
+> Case Of Cancellation
+
+~~~json
+{
+  "opcode":7,
+  "merchant_site": 10001,
+  "txn_id": 181001,
+  "amount": "350.00",
+  "sign": "bb5c48ea540035e6b7c03c8184f74f09d26e9286a9b8f34b236b1bf2587e4268",
+  "cf2": "250.00;100.00"
+}
+~~~
+
+You can cancel the transaction in full or in part before the transaction is confirmed, and make a refund after confirmation if the payment has not yet been made. 
+
+To make cancel or refund an operation, make a [Cancel](#cancel) (Operation code `6`) or [Refund](#refund) (Operation code `7`) requests respectively and specify in the `cf2` field a partial amounts of the cancelled transaction (in the same format as for the authorization). 
+
+<aside class="success">Amount to cancel (<code>amount</code> value) should equal the sum of its partial amounts.</aside>
+
+
 # Receipt Info {#cheque}
 
 According to Russian Federation law (54-FZ), every merchant should provide online receipts for clients due to tax regulation. QIWI PAY API provides the service for it.
@@ -1121,8 +1255,8 @@ Follow the steps to send receipt for the transaction:
 3. Transform the result to ZLIB format by [RFC1950](http://www.ietf.org/rfc/rfc1950.txt)
 4. Send BASE64-encoded obtained string:
 
-    * when using QIWI PAY WPF redirect - in `merchant_cheque` parameter
-    * when using QIWI PAY API - in `cheque` parameter for `auth`, `capture`, `sale` operations.
+    * when using QIWI PAY WPF redirect — in `merchant_cheque` parameter
+    * when using QIWI PAY API — in `cheque` parameter for `auth`, `capture`, `sale` operations.
   
 <aside class="notice">
 When your account is in <a href="#test_mode">test mode</a>, the receipt will be processed in test environment.
@@ -1187,17 +1321,17 @@ eJyljk0KwjAQRveeImRdtEl1oSvvIVJCGjHQNrWZgqUUFG+iFyi6FDxDeiOT+LcQV25m8d58800zQAhr
 Parameter|Required|Data type|Description
 --------|-------|----------|--------
 seller_id|Y|decimal|Organization TIN (taxpayer identification number)
-cheque_type|Y|decimal|Receipt type (tag 1054 in the tax document) - one of the following:<br>`1` - Incoming cash<br>`2` - Cash return<br>`3` - Outcoming cash<br>`4` - Outcoming cash return
-customer_contact|Y|string(64)|Customer phone or e-mail (tag 1008 in the tax document)
-tax_system|Y|decimal|Tax system applied to merchant (tag 1055 in the tax document):<br>`0` – General, "ОСН"<br>`1` – Simplified income, "УСН доход"<br>`2` – Simplified income minus expense, "УСН доход - расход"<br>`3` – United tax to conditional income, "ЕНВД"<br>`4` – United agriculture tax, "ЕСН"<br>`5` – Patent tax system, "Патент"
+cheque_type|Y|decimal|Receipt type (tag `1054` in the tax document) — one of the following:<br>`1` — Incoming cash<br>`2` — Cash return<br>`3` — Outcoming cash<br>`4` — Outcoming cash return
+customer_contact|Y|string(64)|Customer phone or e-mail (tag `1008` in the tax document)
+tax_system|Y|decimal|Tax system applied to merchant (tag `1055` in the tax document):<br>`0` – General, "ОСН"<br>`1` – Simplified income, "УСН доход"<br>`2` – Simplified income minus expense, "УСН доход - расход"<br>`3` – United tax to conditional income, "ЕНВД"<br>`4` – United agriculture tax, "ЕСН"<br>`5` – Patent tax system, "Патент"
 positions|Y|array|Items
 --------|-------|----------|--------
-quantity|Y|decimal|Goods quantity (tag 1023 in the tax document)
+quantity|Y|decimal|Goods quantity (tag `1023` in the tax document)
 price|Y|decimal|Price per item of goods, with discounts and markups (tag 1079 in the tax document)
-tax|Y|decimal|VAT rate (tag 1199 in the tax document):<br>`1` – 18%<br>`2` – 10%<br>`3` – расч. 18/118<br>`4` – расч. 10/110<br>`5` – 0%<br>`6` – not applicable
+tax|Y|decimal|VAT rate (tag `1199` in the tax document):<br>`1` – 18%<br>`2` – 10%<br>`3` – расч. 18/118<br>`4` – расч. 10/110<br>`5` – 0%<br>`6` – not applicable
 description|Y|string(128)|Goods description
-payment_method|Y|decimal|Cash type (tag 1214 in the tax document):<br>`1` – payment in advance 100%. Full payment in advance before commodity provision<br>`2`  – payment in advance. Partial payment before commodity provision<br>`3` – prepayment<br>`4` – full payment, taking into account prepayment, with commodity provision<br>`5` – partial payment and credit payment. Partial payment for the commodity at the moment of delivery, with future credit payment.<br>`6`  – credit payment. Commodity is delivered with no payment at the moment and future credit payment is expected.<br>`7` – payment for the credit. Commodity payment after its delivery with future credit payment.
-payment_subject|Y|decimal|Payment subject (tag 1212 in the tax document):<br>`1` – commodity except excise commodities (name and other properties describing the commodity).<br>`2` – excise commodity (name and other properties describing the commodity).<br>`3` – work (name and other properties describing the work). .<br>`4` – service (name and other properties describing the service).<br>`5` – gambling rate (in any gambling activities).<br>`6` – gambling prize payment (in any gambling activities)в.<br>`7` – lottery ticket payment (in accepting payments for lottery tickets, including electronic ones, lottery stakes in any lottery activities).<br>`8` – lottery prize payment (n any lottery activities). <br>`9` – provision of rights to use intellectual activity results.<br>`10` – payment (advance, pre-payment, deposit, partial payment, credit, fine, bonus, reward, or any similar payment subject).<br>`11` – agent's commission (in any fee to payment agent, bank payment agent, commissioner or other agent service).<br>`12` – multiple payment subject (in any payment constituent subject to any of the above).<br>`13` – other payment subject not related to any of the above.
+payment_method|Y|decimal|Cash type (tag `1214` in the tax document):<br>`1` – payment in advance 100%. Full payment in advance before commodity provision<br>`2`  – payment in advance. Partial payment before commodity provision<br>`3` – prepayment<br>`4` – full payment, taking into account prepayment, with commodity provision<br>`5` – partial payment and credit payment. Partial payment for the commodity at the moment of delivery, with future credit payment.<br>`6`  – credit payment. Commodity is delivered with no payment at the moment and future credit payment is expected.<br>`7` – payment for the credit. Commodity payment after its delivery with future credit payment.
+payment_subject|Y|decimal|Payment subject (tag `1212` in the tax document):<br>`1` – commodity except excise commodities (name and other properties describing the commodity).<br>`2` – excise commodity (name and other properties describing the commodity).<br>`3` – work (name and other properties describing the work). .<br>`4` – service (name and other properties describing the service).<br>`5` – gambling rate (in any gambling activities).<br>`6` – gambling prize payment (in any gambling activities)в.<br>`7` – lottery ticket payment (in accepting payments for lottery tickets, including electronic ones, lottery stakes in any lottery activities).<br>`8` – lottery prize payment (n any lottery activities). <br>`9` – provision of rights to use intellectual activity results.<br>`10` – payment (advance, pre-payment, deposit, partial payment, credit, fine, bonus, reward, or any similar payment subject).<br>`11` – agent's commission (in any fee to payment agent, bank payment agent, commissioner or other agent service).<br>`12` – multiple payment subject (in any payment constituent subject to any of the above).<br>`13` – other payment subject not related to any of the above.
 
 # Apple Pay {#applepay}
 
