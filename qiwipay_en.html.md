@@ -466,6 +466,14 @@ apple_pay_encoded_payment_token|No|string|Encrypted payment data [from Apple Pay
 wallet_type|No|string(50)|Type of a wallet to top up. Possible values: `QIWI`
 account_id|No|integer(50)|Number of a wallet to top up. **Required if wallet_type=QIWI is in the operation**
 receiver_name|No|string(30)|Last and first name of the payment's receiver separated by `, ` (comma followed by space). Order matters: last name should be before first name.  Only Latin letters, digits, and symbols `_`, `-` (first name can be with spaces).
+receiver_pan|Yes, if available|string(19)|Card number of the money transfer recipient. Specified for money transfer operations.
+receiver_bank_account|Yes, if available|string(20)|Recipient's account number. Specified for money transfer operations.
+receiver_bic|Yes, if available|string(9)|BIC of the credit institution of the recipient. Specified for money transfer operations.
+receiver_wallet|Yes, if available|string(64)|Recipient's wallet number. Specified when replenishing the wallet.
+receiver_inn|Yes, if available|string(12)|TIN of the organization that issued the wallet. Specified when replenishing the wallet.
+receiver_phone|Yes, if available|string(15)|Recipient's phone number. Specified when replenishing the phone.
+
+
 
 ### Response for card with no 3DS {#sale_no3ds}
 
@@ -951,24 +959,51 @@ user@server:~$ echo -n "7.00|643|555|3" | openssl dgst -sha256  -hmac "secret_ke
 (stdin)= 9c878bfbf9baa30c26c8c6206976fc3ed2c036afeabf352f8a045fe331d42d7e
 ~~~
 
-You should sign all parameters in each operation request. Add the signature in `sign` parameter for each request.
+You should sign each operation request. Add the signature in `sign` parameter for each request.
 
 To calculate signature, use HMAC algorithm with SHA256-hash function. For this, you need `secret key` parameter obtained with other integration settings.
 
 * Separator is `|`.
-* Parameters are in alphabetical order, i.e. for parameters `amount|currency|merchant_site|opcode` string for signature verification is: `15.00|643|12345|1`.
+* All values are represented as strings.
+* Values are placed  alphabetically ordered parameter names, i.e. for parameters `{ "opcode":1, "merchant_site": 12345, "amount": "15.00", "currency": 643 }` string for signature verification is: `15.00|643|12345|1`.
 * Signed are all the parameters in the request.
-* Do not include parameters with empty values
+* Do not include parameters with empty values.
 * Only values are signed, not their names.
 
 # Payment Notification {#callback}
+
+~~~http
+POST /merchant-pay/callback HTTP/1.1
+Content-Type: application/json
+Host: example.com
+
+{
+    "request_id": "d861cxxxx9cayyy",
+    "txn_id": 806930407050,
+    "txn_date": "2021-10-08T12:12:53+00:00",
+    "txn_status": 3,
+    "txn_type": 1,
+    "issuer_name": "Сбербанк России",
+    "issuer_country": "RUS",
+    "card_name": "cardholder+name",
+    "card_token": "d0f3c937-xxxx-yyyy-zzzz-5614c90b6199",
+    "card_token_expire": "2022-05-30T21:00:00+00:00",
+    "pan": "400000******0002",
+    "amount": 1856,
+    "currency": 643,
+    "auth_code": "255723",
+    "eci": "",
+    "error_code": 0,
+    "sign": "B9BC3C4A672FAB763519XXXXYYYYZZZZ6DA8BEE9649D6E6A8BD3A1198BE9417532B"
+}
+~~~
 
 There are two types of notification flow:
 
 * During payment processing, when card debit is confirmed and before showing status page or RSP response (depends on what flow is used, WPF or API).
 * On background, when payment processed.
 
-Notification goes to `callback_url` parameter from the original request, as a POST request with the following parameters.
+Notification goes to an URL which merchant provides upon integration process, or to `callback_url` parameter from the original request. Notification is a POST request with JSON body with the following parameters.
 
 <aside class="success">
 Callback is sent by HTTPS protocol on 443 port only.
@@ -989,7 +1024,8 @@ currency | integer | + | Operation currency by ISO 4217
 auth_code | string(6) | - | Authorization code
 eci | string(2) | - | Electronic Commerce Indicator
 card_name | string(64) | - | Cardholder name as printed on the card (Latin letters)
-card_bank | string(64) | - | Issuing Bank
+issuer_name | string(64) | - | Bank Issuer
+issuer_country | string(3) | - | Country of bank issuer
 order_id | string(256) | - | Unique order ID assigned by RSP system. Returned if sent in the original request.
 ip | string(15) | + | Customer IP address
 email | string(64) | + | Customer E-mail
@@ -1011,7 +1047,7 @@ sign | string(64) | - | Checksum (signature) of the request
 To minimize possible fraud notifications, RSP should verify callback signature located in `sign` field.
 
 <aside class="notice">
-Signature algorithm coincides with ordinary QIWI PAY requests, though only the parameters marked above with a plus sign in <i>Used for signature</i> column are taken.
+Signature algorithm coincides with <a href="#sign">that of API requests</a>, though only the parameters marked above with a plus sign in <i>Used for signature</i> column are taken.
 </aside>
 
 To guarantee QIWI origin of the notifications, accept only these IP addresses related to QIWI:
@@ -1507,8 +1543,7 @@ As a result of these Steps, you obtain a string with encoded value which is the 
 
 If Google Pay&trade; payment token contained 3DS cryptogram, then QIWI PAY API response completely corresponds to the [sale operation response](#sale_no3ds) in case of no 3DS operation.
 
-If Google Pay&trade; payment token does not contain 3DS cryptogram, then QIWI PAY API response completely corresponds to the [sale operation response](#sale_3ds) when the user needs 3DS authentication. 
-
+If Google Pay&trade; payment token does not contain 3DS cryptogram, then QIWI PAY API response completely corresponds to the [sale operation response](#sale_3ds) when the user needs 3DS authentication.
 
 # Transaction Types {#txn_type}
 
@@ -1630,6 +1665,7 @@ Error code | Name | Description
 8004 | Temporary error | Server is busy, repeat later
 8005 | Route not found | Route for transaction processing not found
 8006 | Parsing error | Unable to process input request, incorrect format
+8008 | No receiver data | Error on transmitting receiver data
 8018 | Transaction not found | Transaction not found
 8019 | Incorrect [opcode](#opcode) |
 8020 | Amount too big | `reversal`, `refund` operations amount exceeded
@@ -1654,6 +1690,7 @@ Error code | Name | Description
 8070 | Amount of transaction is bigger than allowed | Test operation amount exceeds the [allowed value](#test_limit)
 8151 | Authentification failed | Customer failed to authenticate on 3DS.
 8152 | Transaction rejected | Transaction rejected by security service.
+8153 | Reattempt not permitted | Repeated authorization request forbidden due to obtained response from a Payment system
 8160 | Transaction rejected | Issuer response: Payment rejected. Try again
 8161 | Transaction rejected | Issuer response: Payment rejected. Try again
 8162 | Transaction rejected | Issuer response: Payment rejected. Try again
