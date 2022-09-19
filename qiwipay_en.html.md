@@ -57,7 +57,6 @@ You can use one of the following integration methods on QIWI PAY:
 QIWI PAY API requests with full card numbers are allowed by PCI DSS-certified merchants only, as Card Data are processed on the merchant's side.
 </aside>
 
-
 ## Service URLs {#urls}
 
 * To use QIWI PAY WPF, one is required to redirect client to the URL:
@@ -67,7 +66,6 @@ QIWI PAY API requests with full card numbers are allowed by PCI DSS-certified me
 * To use QIWI PAY API, one is required to send HTTP POST requests to the URL:
 
 `https://acquiring.qiwi.com/merchant/direct`.
-
 
 # Operations {#opcode}
 
@@ -107,7 +105,7 @@ For `sale` operation, RSP can make `reversal` but only until the day ends and no
 To make sure you know which operation may be applied, check transaction status and [statuses table](#txn_status).
 
 <aside class="warning">
-The longest period between <code>auth</code> and <code>capture</code> operations is 72 hours. Therefore, if no <code>capture</code> operation comes within 72 hours from RSP since <code>auth</code> is received, it will be performed anyway. 
+The longest period between <code>auth</code> and <code>capture</code> operations is 72 hours. Therefore, if no <code>capture</code> operation comes within 72 hours from RSP since <code>auth</code> is received, it will be performed anyway.
 </aside>
 
 ## 3DS {#threeds}
@@ -118,7 +116,6 @@ The longest period between <code>auth</code> and <code>capture</code> operations
 
 QIWI PAY WPF Payment flow with 3DS verification is explained on the following scheme.
 
-<!--img src="/images/3ds_en.png" class="image" /-->
 <div class="mermaid">
 sequenceDiagram
 participant Customer
@@ -131,11 +128,11 @@ Note over ips: Interaction Domain
 Note over qp,qb: Acquirer Domain
 Customer->>qp:Send card data from payment web-form
 activate Customer
-activate qp 
+activate qp
 qp->>ips:Send VEReq <br>to verify card for<br>3-D Secure enrollment
 activate ips 
 ips->>Issuer:Request to ACS<br>to verify card enrollment
-activate Issuer 
+activate Issuer
 Issuer-->>ips:Return verify response (VERes)
 deactivate Issuer
 ips-->>qp:Return verify response (VERes)
@@ -145,24 +142,22 @@ qp-->>Customer:Redirect from PAReq to ACS URL<br>taken from VERes<br>to enter 3-
 deactivate qp
 deactivate Customer
 Customer->>Issuer:Redirect to ACS URL
-activate Customer 
-activate Issuer 
+activate Customer
+activate Issuer
 Issuer-->>Customer:One-time password SMS
 Customer->>Issuer:Enter one-time password
 Issuer->>ips:Send ACS authentication<br>result data
 Issuer-->>Customer:Redirect to<br>QIWI PAY page<br>with PARes
 deactivate Customer
-deactivate Issuer 
+deactivate Issuer
 Customer->>qp:Redirect to QIWI PAY page
-activate Customer 
-activate qp 
+activate Customer
+activate qp
 qp->>qp:PARes validity verification
 qp->>qb:Authorization request<br>with PARes data
 deactivate qp
 deactivate Customer
 </div>
-
-
 
 # QIWI PAY WPF {#wpf}
 
@@ -172,13 +167,11 @@ RSP only redirects customers to https://pay.qiwi.com/payform. Then customers com
 
 QIWI PAY WPF one-step payment flow is explained on the following scheme.
 
-<!--img src="/images/wpf_sale_en.png" class="image" /-->
-
 <div class="mermaid">
 sequenceDiagram 
 participant Customer
 participant Merchant
-participant QiwiPay as QIWI PAY 
+participant QiwiPay as QIWI PAY
 participant QiwiBank as QIWI Bank
 Customer->>Merchant:Placing order,<br>choose card payment
 activate Merchant
@@ -203,7 +196,7 @@ end
 QiwiPay->>QiwiBank:Authorization request
 activate QiwiBank
 QiwiBank-->>QiwiPay:Successful authorization
-deactivate QiwiBank 
+deactivate QiwiBank
 rect rgb(237, 243, 255)
 Note over Customer, QiwiPay: Immediate notification
 QiwiPay->>Merchant:Notification on operation<br>result (callback)
@@ -216,8 +209,6 @@ QiwiPay->>Customer:E-mail notification
 deactivate QiwiPay
 Customer->>Merchant:Return to shop<br>web-site from<br>status page
 </div>
-
-
 
 ## Redirect to QIWI PAY WPF
 
@@ -269,7 +260,6 @@ callback_url|No|string(256)|[Callback URL](#callback)
 success_url|No|string(256)|Redirect URL when payment is successful
 decline_url|No|string(256)|Redirect URL when payment is unsuccessful
 
-
 # QIWI PAY API {#api}
 
 ## Authorization {#api_auth}
@@ -283,8 +273,6 @@ To obtain certificate, please submit certificate request in .csr PKCS#10 format 
 ## Payment Flow {#flows}
 
 ### One-step payment flow {#onestep}
-
-<!--img src="/images/api_sale_en.png" class="image" /-->
 
 <div class="mermaid">
 sequenceDiagram
@@ -329,10 +317,7 @@ Merchant->>Customer:Status page<br>with operation result
 deactivate Merchant
 </div>
 
-
 ### Two-step payment flow {#twostep}
-
-<!--img src="/images/api_auth_en.png" class="image" /-->
 
 <div class="mermaid">
 sequenceDiagram
@@ -341,9 +326,9 @@ participant Merchant
 participant QiwiPay as  QIWI PAY
 participant QiwiBank as QIWI Bank
 Customer->>Merchant:Send card data<br>from payment web-form
-activate Merchant 
-Merchant->>QiwiPay:<br>"auth" operation<br>request 
-activate QiwiPay 
+activate Merchant
+Merchant->>QiwiPay:<br>"auth" operation<br>request
+activate QiwiPay
 QiwiPay->>QiwiPay:Anti-fraud module
 rect rgb(237, 243, 255)
 Note over Customer, QiwiPay: 3-D Secure
@@ -353,18 +338,18 @@ deactivate QiwiPay
 Merchant-->>Customer:Redirect to ACS URL
 deactivate Merchant
 Customer->>Merchant:Return with 3-D Secure<br>verification result
-activate Merchant 
+activate Merchant
 Merchant->>QiwiPay:"finish_3ds" operation<br>request
-activate QiwiPay 
+activate QiwiPay
 end
-QiwiPay->>QiwiBank: Auhtorization request
-activate QiwiBank 
+QiwiPay->>QiwiBank: Authorization request
+activate QiwiBank
 QiwiBank-->>QiwiPay: Successful authorization
-deactivate QiwiBank 
+deactivate QiwiBank
 rect rgb(237, 243, 255)
 Note over Customer, QiwiPay: Immediate notification
 QiwiPay->>Merchant:Notification on<br>operation result (callback)
-activate Merchant 
+activate Merchant
 Merchant-->>QiwiPay:Confirm receiving notification
 deactivate Merchant
 end
@@ -375,17 +360,16 @@ Merchant->>Customer:Status page<br>with operation result
 deactivate Merchant
 Note over Merchant: Awaiting for request confirming authorization
 Merchant-->>QiwiPay:"capture" operation<br>request
-activate Merchant 
-activate QiwiPay 
+activate Merchant
+activate QiwiPay
 QiwiPay->>QiwiBank:Financial operation<br>after authorization
-activate QiwiBank 
+activate QiwiBank
 QiwiBank-->>QiwiPay:Confirmed financial operation
 deactivate QiwiBank
 QiwiPay->>Merchant:Notification on<br>operation result (callback)
 deactivate QiwiPay
 deactivate Merchant
 </div>
-
 
 ## Sale Operation {#sale}
 
@@ -462,7 +446,6 @@ merchant_uid|No|string(64)|Unique Customer ID assigned by RSP system
 order_expire|No|YYYY-MM-DDThh24:mm:ss|Order expiration date by ISO8601
 callback_url|No|string(256)|[Callback URL](#callback)
 cheque|No|string|[Receipt data](#cheque)
-apple_pay_encoded_payment_token|No|string|Encrypted payment data [from Apple Pay](#applepay)
 wallet_type|No|string(50)|Type of a wallet to top up. Possible values: `QIWI`
 account_id|No|integer(50)|Number of a wallet to top up. **Required if wallet_type=QIWI is in the operation**
 receiver_name|No|string(30)|Last and first name of the payment's receiver separated by `, ` (comma followed by space). Order matters: last name should be before first name.  Only Latin letters, digits, and symbols `_`, `-` (first name can be with spaces).
@@ -472,8 +455,7 @@ receiver_bic|Yes, if available|string(9)|BIC of the credit institution of the re
 receiver_wallet|Yes, if available|string(64)|Recipient's wallet number. Specified when replenishing the wallet.
 receiver_inn|Yes, if available|string(12)|TIN of the organization that issued the wallet. Specified when replenishing the wallet.
 receiver_phone|Yes, if available|string(15)|Recipient's phone number. Specified when replenishing the phone.
-
-
+upper_commission_taken|No|string|Field to put upper commission in.
 
 ### Response for card with no 3DS {#sale_no3ds}
 
@@ -539,7 +521,6 @@ acs_url | string(1024) | Issuing Bank URL where to redirect Customer
 pareq | string(4096) | Unique Customer ID to use for `acs_url` redirect.
 is_test | string(4) | Presence of this parameter with `true` value indicates that transaction is processed in [testing mode](#test_mode) and no card debiting is made
 
-
 You need to redirect Customer to 3DS standard redirection URL.
 
 ## Finish 3DS authentication {#finish_3ds}
@@ -604,7 +585,6 @@ auth_code | string(6) | Authorization code
 eci | string(2) | Electronic Commerce Indicator
 is_test | string(4) | Presence of this parameter with `true` value indicates that transaction is processed in [testing mode](#test_mode) and no card debiting is made
 
-
 ## Sale Confirmation Operation {#sale_confirm}
 
 ### Request
@@ -646,7 +626,6 @@ txn_type | integer | [Transaction type](#txn_type)
 txn_date | YYYY-MM-DDThh:mm:ss±hh:mm | Transaction date, by ISO8601 with time zone
 error_code | integer | [System error code](#errors)
 is_test | string(4) | Presence of this parameter with `true` value indicates that transaction is processed in [testing mode](#test_mode) and no card debiting is made
-
 
 ## Cancel Operation {#cancel}
 
@@ -693,7 +672,6 @@ txn_date | YYYY-MM-DDThh:mm:ss±hh:mm | Transaction date, by ISO8601 with time z
 error_code | integer | [System error code](#errors)
 amount | decimal | Amount to debit
 is_test | string(4) | Presence of this parameter with `true` value indicates that transaction is processed in [testing mode](#test_mode) and no real funds return to card is made
-
 
 ## Refund Operation {#refund}
 
@@ -787,7 +765,6 @@ callback_url|No|string(256)|[Callback URL](#callback)
 product_name|No|string(25)|Service description for the Customer
 cheque|No|string|[Receipt data](#cheque)
 
-
 ### Response
 
 ~~~json
@@ -815,7 +792,6 @@ pan | string(19) | Card number
 amount | decimal | Amount to pay
 currency | integer | Operation currency by ISO 4217
 auth_code | string(6) | Authorization code
-
 
 ## Status Query Operation {#status}
 
@@ -1010,7 +986,6 @@ Callback is sent by HTTPS protocol on 443 port only.
 Certificate should be issued by any trusted center of certification (e.g. Comodo, Verisign, Thawte etc)
 </aside>
 
-
 Callback field|Data type| Used for signature | Description
 --------|----------|------------------|---------
 txn_id | integer | + | Transaction ID
@@ -1146,7 +1121,6 @@ stopover_code|Y|string(1)|Stop-Over Code
 departure_date|Y|YYYY-MM-DDThh:mm:ss±hh:mm|Departure date, ISO8601 with time zone
 flight_number|Y|string(5)|Flight number, digits only
 
-
 # Safe Purchase {#safe_deal}
 
 Safe Purchase service from QIWI provides a transparent and reliable payment mechanism for work services without the risk of losing money for both the customer and the worker. To connect a Safe Purchase service, contact your support manager.
@@ -1273,12 +1247,11 @@ Once the operation is confirmed, there are 30 days to make the payment operation
 }
 ~~~
 
-You can cancel the transaction in full or in part before the transaction is confirmed, and make a refund after confirmation if the payment has not yet been made. 
+You can cancel the transaction in full or in part before the transaction is confirmed, and make a refund after confirmation if the payment has not yet been made.
 
-To make cancel or refund an operation, make a [Cancel](#cancel) (Operation code `6`) or [Refund](#refund) (Operation code `7`) requests respectively and specify in the `cf2` field a partial amounts of the cancelled transaction (in the same format as for the authorization). 
+To make cancel or refund an operation, make a [Cancel](#cancel) (Operation code `6`) or [Refund](#refund) (Operation code `7`) requests respectively and specify in the `cf2` field a partial amounts of the cancelled transaction (in the same format as for the authorization).
 
 <aside class="success">Amount to cancel (<code>amount</code> value) should equal the sum of its partial amounts.</aside>
-
 
 # Receipt Info {#cheque}
 
@@ -1369,182 +1342,6 @@ description|Y|string(128)|Goods description
 payment_method|Y|decimal|Cash type (tag `1214` in the tax document):<br>`1` – payment in advance 100%. Full payment in advance before commodity provision<br>`2`  – payment in advance. Partial payment before commodity provision<br>`3` – prepayment<br>`4` – full payment, taking into account prepayment, with commodity provision<br>`5` – partial payment and credit payment. Partial payment for the commodity at the moment of delivery, with future credit payment.<br>`6`  – credit payment. Commodity is delivered with no payment at the moment and future credit payment is expected.<br>`7` – payment for the credit. Commodity payment after its delivery with future credit payment.
 payment_subject|Y|decimal|Payment subject (tag `1212` in the tax document):<br>`1` – commodity except excise commodities (name and other properties describing the commodity).<br>`2` – excise commodity (name and other properties describing the commodity).<br>`3` – work (name and other properties describing the work). .<br>`4` – service (name and other properties describing the service).<br>`5` – gambling rate (in any gambling activities).<br>`6` – gambling prize payment (in any gambling activities)в.<br>`7` – lottery ticket payment (in accepting payments for lottery tickets, including electronic ones, lottery stakes in any lottery activities).<br>`8` – lottery prize payment (n any lottery activities). <br>`9` – provision of rights to use intellectual activity results.<br>`10` – payment (advance, pre-payment, deposit, partial payment, credit, fine, bonus, reward, or any similar payment subject).<br>`11` – agent's commission (in any fee to payment agent, bank payment agent, commissioner or other agent service).<br>`12` – multiple payment subject (in any payment constituent subject to any of the above).<br>`13` – other payment subject not related to any of the above.
 
-# Apple Pay {#applepay}
-
-Apple Pay allows customers to pay for purchases on the site in one touch, without entering the card data. The technology works in mobile apps and the Safari browser on iPhone, iPad, Apple Watch and MacBook. To enable the Apple Pay payment method, you should contact your accompanying manager.
-
-You'll need to integrate with Apple yourself. This integration will allow you to verify the TSP website and receive payment data of the user.
-
-Requirements for TSP to integrate Apple Pay on your web page:
-
-* Developer account in Apple Developer Program
-* Use of HTTPS on the Apple Pay page, TLS 1.2 support, valid SSL certificate
-* Compliance with [Apple's guidelines](https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/) on Apple Pay on websites
-* Using the framework [Apple Pay JS API](https://developer.apple.com/documentation/apple_pay_on_the_web/apple_pay_js_api)
-
-For more information on integration, please visit [Apple's website](https://developer.apple.com/apple-pay/implementation/).
-
-## How to send a payment {#qiwipay_apple}
-
-> Sending Apple Data Example
-
-~~~json
-{
-  "opcode":1,
-  "merchant_site":"123321",
-  "order_id":500989,
-  "apple_pay_encoded_payment_token":"eNrVV1mPszgW\/S\/1mpGKJSShpX6wgbAEk7AvKmnEFghLSCDghFb\/93EqX31L9zzMvIw0kSLgYpu7nHt8\/MfbJX60+fkmxrf47bc\/3qa8H07d+e23N0n450S\/=",
-  "currency":643,
-  "amount":"100.00",
-  "phone":"79111111111",
-  "sign":"d96af29003958983b7ca158083d4c22033eb1a809d4c6"
-}
-~~~
-
-The process of making an Apple Pay payment in the QIWI PAY API consists of three steps:
-
-1. Creating an Apple Pay payment session and validating TSP in Apple Pay
-2. Getting encrypted payment data from Apple Pay
-3. Sending a request for a write-off to QIWI
-
-Currently, when Apple Pay payments are processing, the purchase operation is supported by the the following [Operation codes](#sale_types): `sale` (code `1`) and `auth` (code `3`).
-
-To send payment data to QIWI, you must pass the `apple_pay_encoded_payment_token` parameter containing Apple's encrypted payment data in [the request](#sale). The value of the parameter is an encoded string. This parameter (like all other field values in the JSON-body of the request) must be involved in the calculation of the [signature of the request](#sign) (`sign` parameter).
-
-The value of the `apple_pay_encoded_payment_token` field is calculated by the following algorithm:
- 
-`value = b64_encode_bytes_to_string (compress_bytes_with_zlib (to_bytes (json)))`
-
-~~~json
-{
-  "paymentData": {
-    "data": "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZX...........................",
-    "header": {
-      ...
-    },
-    "signature": "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZX...........................",
-    "version": "EC_v1"
-}
-}
-~~~
-
-> Example of encoding Apple Pay payment token
-
-~~~python
-import zlib
-import base64
-
-token = 'Hello world'
-
-token_bytes = token.encode('utf-8')
-token_deflated = zlib.compress(token_bytes)
-token_base64 = base64.b64encode(token_deflated)
-token_result = token_base64.decode('utf-8')
-
-resp_base64 = token_result.encode('utf-8')
-resp_deflated = base64.b64decode(resp_base64)
-resp_bytes = zlib.decompress(resp_deflated)
-resp_token = resp_bytes.decode('utf-8')
-
-print('resp_token: ', resp_token)
-~~~
-
-~~~shell
->> resp_token: 'Hello world'
-~~~
-
-Here `json` is a JSON object. This object must contain all the fields that Apple receives in accordance with the "Top-Level Structure" structure. See [Apple documentation](https://developer.apple.com/library/archive/documentation/PassKit/Reference/PaymentTokenJSON/PaymentTokenJSON.html#//apple_ref/doc/uid/TP40014929-CH8-SW2).
-
-**Step 1** (`to_bytes`) — The `json` object is converted into an array of bytes in accordance with the UTF-8 encoding.
-
-**Step 2** (`compress_bytes_with_zlib`) — The bytes received in the previous step are compressed by the zlib library. When compressing, you must follow [the RFC1950 specification](http://www.ietf.org/rfc/rfc1950.txt) and ensure that the `zlib header` is recorded at the beginning of the compressed stream.
-
-**Step 3** (`b64_encode_bytes_to_string`) — The bytes received in the previous step are encoded in the [base64 format](https://ru.wikipedia.org/wiki/Base64).
- 
-As a result of all the steps, we get a string with an encoded value, which is framed in the value of the `apple_pay_encoded_payment_token` field.
-
-# Google Pay&trade; Integration {#google}
-
-This section describes Google Pay&trade; integration process into merchant's Payment Form in the QIWI PAY API framework. Payments from Visa and MasterCard payment cards are supported.
-
-1. Implement the requirements of [Google Pay&trade; WEB](https://developers.google.com/pay/api/web) for accepting encrypted payment data. Check [Integration checklist](https://developers.google.com/pay/api/web/guides/test-and-deploy/integration-checklist) and [Brand guidelines](https://developers.google.com/pay/api/web/guides/brand-guidelines).
-2. Implement the QIWI PAY [Google data sending requirements](#qiwipay_google). 
-3. [Request production access](https://developers.google.com/pay/api/web/guides/test-and-deploy/request-prod-access). Indicate the following data in the request:
-    * Tokenization Method — `Gateway`
-    * Payment Processor or Gateway — `qiwi`
-    * Merchant Name — provided by QIWI Support
-4. Google tests your Payment Form and approves the launch. 
-
-## How to send data to Google {#qiwipay_google}
-
-QIWI PAY API supports Google Pay&trade; payment processing for `sale` (opcode: 1) and `auth` (opcode: 3) [sale operations](#sale).
-
-~~~json
-{
-  "opcode": 1,
-  "merchant_site": "123456",
-  "order_id": 1969843,
-  "google_pay_encoded_payment_token": "eJxVUtuK2zAQfd+vCHpeWN2sy0If3GShS9mS0hb8YChjabx........",
-  "currency": 643,
-  "amount": "1000.00",
-  "country": "RUS",
-  "ip": "1.2.3.4",
-  "user_timedate": "2020-01-29T14:14:47+00:00",
-  "product_name": "Payment amount 100000 copecs",
-  "sign": "de4f8390ee8afb05797057ca79d20a416512f..."
-}
-~~~
-
-> Example of encoding Google Pay payment token
-
-~~~python
-import zlib
-import base64
-
-token = 'Hello world'
-
-token_bytes = token.encode('utf-8')
-token_deflated = zlib.compress(token_bytes)
-token_base64 = base64.b64encode(token_deflated)
-token_result = token_base64.decode('utf-8')
-
-resp_base64 = token_result.encode('utf-8')
-resp_deflated = base64.b64decode(resp_base64)
-resp_bytes = zlib.decompress(resp_deflated)
-resp_token = resp_bytes.decode('utf-8')
-
-print('resp_token: ', resp_token)
-~~~
-
-~~~shell
->> resp_token: 'Hello world'
-~~~
-
-Add `google_pay_encoded_payment_token` field to each sale request. Field value is an encoded string and it should participate in [sign](#sign) verification.
-
-The field value is calculated by the following algorithm:
-
-`b64_encode_bytes_to_string (compress_bytes_with_zlib (to_bytes (JSON)))`
-
-<aside class="notice">
-<code>JSON</code> object structure is described in <a href="https://developers.google.com/pay/api/web/guides/resources/payment-data-cryptography">Payment data cryptography for merchants</a> document.
-</aside>
-
-
-**Step 1** (`to_bytes`) — Convert `JSON` object to bytes array UTF-8 encoded.
- 
-**Step 2** (`compress_bytes_with_zlib`) — Compress the bytes from Step 1 by zlib library. You should follow the specification [RFC1950](http://www.ietf.org/rfc/rfc1950.txt) and provide `zlib header` record into the beginning of compressed data pipe.
- 
-**Step 3** (`b64_encode_bytes_to_string`) — `Base64` encode the bytes from Step2.
-
-As a result of these Steps, you obtain a string with encoded value which is the required `google_pay_encoded_payment_token` field value.
-
-## Response to sale operation
-
-If Google Pay&trade; payment token contained 3DS cryptogram, then QIWI PAY API response completely corresponds to the [sale operation response](#sale_no3ds) in case of no 3DS operation.
-
-If Google Pay&trade; payment token does not contain 3DS cryptogram, then QIWI PAY API response completely corresponds to the [sale operation response](#sale_3ds) when the user needs 3DS authentication.
-
 # Transaction Types {#txn_type}
 
 Transaction types returned in `txn_type` parameter are in the following table.
@@ -1583,7 +1380,6 @@ Status <i>2</i> and higher means that funds are authorized and you may already p
 
 ## Response with errors
 
-
 >Request with errors in card data
 
 ~~~json
@@ -1598,7 +1394,6 @@ Status <i>2</i> and higher means that funds are authorized and you may already p
     "sign": "9FD874BF9D4483854E25D1D3371D01821AA4814CDFA4FE2033B5EDD4D5DE94C9"
 }
 ~~~
-
 
 >Response
 
@@ -1686,6 +1481,7 @@ Error code | Name | Description
 8059 | Currency is not allowed |
 8060 | Amount too big | Amount is higher than allowed for payout.
 8061 | Currency mismatch | Payout currency and original transaction currency are not the same
+8062 | Temporary error  | Server is busy, repeat the request later
 8069 | Quantity limit of transactions is reached | The number of testing operations per day exceeds the [limit](#test_limit)
 8070 | Amount of transaction is bigger than allowed | Test operation amount exceeds the [allowed value](#test_limit)
 8151 | Authentification failed | Customer failed to authenticate on 3DS.
@@ -1701,6 +1497,7 @@ Error code | Name | Description
 8167 | Transaction rejected | Issuer response: Payment rejected. Check card details
 8168 | Transaction rejected | Issuer response: Transaction forbidden. Address to Issuing Bank
 8169 | Transaction rejected | Issuer response: Payment rejected. Limit exceeded. Address to Issuing Bank
+8170 | Transaction rejected | Issuer response: Payment rejected. Wrong SMS code. Try again
 
 # Test Data {#test_mode}
 
