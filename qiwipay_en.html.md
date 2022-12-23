@@ -40,7 +40,7 @@ search: true
 
 # Introduction
 
-###### Last update: 2021-06-02 | [Edit on GitHub](https://github.com/QIWI-API/qiwipay-docs/blob/master/qiwipay_en.html.md)
+###### Last update: 2022-11-02 | [Edit on GitHub](https://github.com/QIWI-API/qiwipay-docs/blob/master/qiwipay_en.html.md)
 
 QIWI PAY service is intended for card payment operations. The service allows RSP to accept secure payments from their clients.
 
@@ -185,7 +185,7 @@ Customer->>QiwiPay:Enter card data and submit form
 activate QiwiPay
 QiwiPay->>QiwiPay:Initial verification of parameters,<br>creating transaction
 QiwiPay->>QiwiPay:Anti-fraud module
-rect rgb(237, 243, 255)
+rect rgb(255, 238, 223)
 Note over Customer, QiwiPay: 3-D Secure
 QiwiPay->>QiwiPay:Verify card for 3-D Secure enrollment
 QiwiPay-->>Customer:Redirect to ACS URL
@@ -197,7 +197,7 @@ QiwiPay->>QiwiBank:Authorization request
 activate QiwiBank
 QiwiBank-->>QiwiPay:Successful authorization
 deactivate QiwiBank
-rect rgb(237, 243, 255)
+rect rgb(255, 238, 223)
 Note over Customer, QiwiPay: Immediate notification
 QiwiPay->>Merchant:Notification on operation<br>result (callback)
 activate Merchant
@@ -285,7 +285,7 @@ activate Merchant
 Merchant->>QiwiPay:"sale" operation<br>request
 activate QiwiPay
 QiwiPay->>QiwiPay:Anti-fraud module
-rect rgb(237, 243, 255)
+rect rgb(255, 238, 223)
 Note over Customer, QiwiPay: 3-D Secure
 QiwiPay->>QiwiPay:Check card<br>3-D Secure enrollment
 QiwiPay-->>Merchant:Redirect ACS<br>Issuing Bank parameters<br>for Customer
@@ -303,7 +303,7 @@ QiwiBank-->>QiwiPay:Successful authorization
 QiwiPay->>QiwiBank:Authorized financial operation
 QiwiBank-->>QiwiPay:Confirmed financial operation
 deactivate QiwiBank
-rect rgb(237, 243, 255)
+rect rgb(255, 238, 223)
 Note over Customer, QiwiPay: Immediate notification
 QiwiPay->>Merchant:Notification on<br>operation result (callback)
 activate Merchant
@@ -330,7 +330,7 @@ activate Merchant
 Merchant->>QiwiPay:<br>"auth" operation<br>request
 activate QiwiPay
 QiwiPay->>QiwiPay:Anti-fraud module
-rect rgb(237, 243, 255)
+rect rgb(255, 238, 223)
 Note over Customer, QiwiPay: 3-D Secure
 QiwiPay->>QiwiPay:Check card 3-D Secure<br>enrollment
 QiwiPay-->>Merchant:Redirect ACS Issuing Bank<br>parameters for Customer
@@ -346,7 +346,7 @@ QiwiPay->>QiwiBank: Authorization request
 activate QiwiBank
 QiwiBank-->>QiwiPay: Successful authorization
 deactivate QiwiBank
-rect rgb(237, 243, 255)
+rect rgb(255, 238, 223)
 Note over Customer, QiwiPay: Immediate notification
 QiwiPay->>Merchant:Notification on<br>operation result (callback)
 activate Merchant
@@ -373,7 +373,7 @@ deactivate Merchant
 
 ## Sale Operation {#sale}
 
-### Request
+### Request {#sale-request}
 
 ~~~json
 {
@@ -527,7 +527,7 @@ You need to redirect Customer to 3DS standard redirection URL.
 
 When Customer returns from 3DS standard redirection URL and completes 3DS authentication successfully, you need to send the following request to finish 3DS authentication process.
 
-### Request after successful 3DS authentication
+### Request after successful 3DS authentication {#finish-request}
 
 ~~~json
 {
@@ -546,7 +546,7 @@ pares | Yes | string(4096) | Customer verification result
 txn_id | Yes | integer | Transaction ID
 sign | Yes | string(64) | [Checksum of the request's parameters](#sign)
 
-### Response to 3DS authentication result
+### Response to 3DS authentication result {#finish-response}
 
 ~~~json
 {
@@ -587,7 +587,7 @@ is_test | string(4) | Presence of this parameter with `true` value indicates tha
 
 ## Sale Confirmation Operation {#sale_confirm}
 
-### Request
+### Request {#confirm-request}
 
 ~~~json
 {
@@ -606,7 +606,7 @@ txn_id | Yes | integer | Transaction ID
 cheque|No|string|[Receipt data](#cheque)
 sign | Yes | string(64) | [Checksum of the request's parameters](#sign)
 
-### Response
+### Response {#confirm-response}
 
 ~~~json
 {
@@ -629,7 +629,7 @@ is_test | string(4) | Presence of this parameter with `true` value indicates tha
 
 ## Cancel Operation {#cancel}
 
-### Request
+### Request {#cancel-request}
 
 ~~~json
 {
@@ -650,7 +650,7 @@ amount|No|decimal|Operation amount
 sign | Yes | string(64) | [Checksum of the request's parameters](#sign)
 cheque|No|string|[Receipt data](#cheque)
 
-### Response
+### Response {#cancel-response}
 
 ~~~json
 {
@@ -675,7 +675,7 @@ is_test | string(4) | Presence of this parameter with `true` value indicates tha
 
 ## Refund Operation {#refund}
 
-### Request
+### Request {#refund-request}
 
 ~~~json
 {
@@ -696,7 +696,7 @@ amount|No|decimal|Operation amount
 sign | Yes | string(64) | [Checksum of the request's parameters](#sign)
 cheque|No|string|[Receipt data](#cheque)
 
-### Response
+### Response {#refund-response}
 
 ~~~json
 {
@@ -721,7 +721,7 @@ is_test | string(4) | Presence of this parameter with `true` value indicates tha
 
 ## Payout Operation {#payout}
 
-### Request
+### Request {#payout-request}
 
 ~~~json
 {
@@ -765,7 +765,7 @@ callback_url|No|string(256)|[Callback URL](#callback)
 product_name|No|string(25)|Service description for the Customer
 cheque|No|string|[Receipt data](#cheque)
 
-### Response
+### Response {#payout-response}
 
 ~~~json
 {
@@ -795,7 +795,7 @@ auth_code | string(6) | Authorization code
 
 ## Status Query Operation {#status}
 
-### Request
+### Request {#status-request}
 
 ~~~json
 {
@@ -814,7 +814,7 @@ txn_id | Yes | integer | Transaction ID
 sign|Yes|string(64)|[Checksum of the request's parameters](#sign)
 order_id|No|string(256)|Unique order ID assigned by RSP system
 
-### Response
+### Response {#status-response}
 
 ~~~json
 {
@@ -1159,11 +1159,11 @@ To use the protocol of a safe purchase, you need to divide the amount of authori
 * The partial amount of payouts,
 * The partial amount of the commissions.
 
-The partial amount of payouts is funds that will be paid to the worker at the end of a safe purchase.
+The partial amount of payouts is the funds that will be paid to the worker at the end of a safe purchase.
 
 The partial amount of commissions is the amount of commissions of the Marketplace on which the transaction is performed, and QIWI. From this amount, QIWI will hold the commission for the operation service, and the remainder will be transferred to the Marketplace.
 
-The amounts are transmitted in the [authorization request](#sale) or on the [WPF calling](#redirect) in the `cf2` field separated by semicolon: 
+The amounts are transmitted in the [authorization request](#sale) or on the [WPF calling](#redirect) in the `cf2` field separated by semicolon:
 
 `"cf2": "<payout partial amount>; <commissions partial amount>"`
 
@@ -1230,7 +1230,7 @@ This type of safe purchase consists of three stages:
 }
 ~~~
 
-Once the operation is confirmed, there are 30 days to make the payment operation. Funds are deposited on the recipient's card within three days.
+Once the operation is confirmed, there are 180 days to make the payment operation. Funds are deposited on the recipient's card within 30 minutes.
 
 <aside class="warning">Organizations without PCI DSS can only make payments using card tokens.</aside>
 
