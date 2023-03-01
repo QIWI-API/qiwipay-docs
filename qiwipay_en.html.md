@@ -1524,7 +1524,11 @@ To make tests of various payment methods and responses, use different expiry dat
 * In all other cases, operation is treated as successful.
 
 <a name="test_limit"></a>
-Test environment has restrictions on the total amount and number of operations. By default, maximum amount of test transaction is 10 rubles. Maximum number of test transactions is 100 per day (MSK time zone). Only test transactions within allowed amount are taken into account.
+
+Test environment has restrictions on the total amount and number of operations:
+
+* Maximum allowed amount of a single test transaction is 10 rubles.
+* Maximum number of test transactions is 100 per day (MSK time zone). Only test transactions within allowed amount are taken into account.
 
 To process 3DS operation, use `unknown name` as card holder name.
 
