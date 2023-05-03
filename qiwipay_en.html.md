@@ -86,7 +86,7 @@ Op.Code | QIWI PAY WPF | QIWI PAY API | Operation | Financial? | Description
 40 | - | + | get_cards_by_token | N | Get linked cards list
 
 <aside class="notice">
-Financial operation means that there will be cash flows on bank accounts.
+Financial operation means that there is cash flow on bank accounts.
 </aside>  
 
 # Operation Methods {#methods}
@@ -105,7 +105,7 @@ For `sale` operation, RSP can make `reversal` but only until the day ends and no
 To make sure you know which operation may be applied, check transaction status and [statuses table](#txn_status).
 
 <aside class="warning">
-The longest period between <code>auth</code> and <code>capture</code> operations is 72 hours. Therefore, if no <code>capture</code> operation comes within 72 hours from RSP since <code>auth</code> is received, it will be performed anyway.
+The longest period between <code>auth</code> and <code>capture</code> operations is 72 hours. Therefore, if no <code>capture</code> operation comes within 72 hours from RSP since <code>auth</code> is received, it is performed anyway.
 </aside>
 
 ## 3DS {#threeds}
@@ -1033,7 +1033,7 @@ To guarantee QIWI origin of the notifications, accept only these IP addresses re
 * 91.213.51.0/24
 
 Notification is treated as successfully delivered when RSP server responds with HTTP code `200 OK`.
-So far, during the first 24 hours after the operation, the system will continue to deliver notification with incremental time intervals until RSP server responds with HTTP code `200 OK`.
+So far, during the first 24 hours after the operation, the system continue to deliver notification with incremental time intervals until RSP server responds with HTTP code `200 OK`.
 
 <aside class="notice">
 Due to any reason, if RSP accepts notification without HTTP code <i>200 OK</i> then the same transaction on the repeated notification should not be treated as the new one.
@@ -1159,9 +1159,9 @@ To use the protocol of a safe purchase, you need to divide the amount of authori
 * The partial amount of payouts,
 * The partial amount of the commissions.
 
-The partial amount of payouts is the funds that will be paid to the worker at the end of a safe purchase.
+The partial amount of payouts is the funds that is paid to the worker at the end of a safe purchase.
 
-The partial amount of commissions is the amount of commissions of the Marketplace on which the transaction is performed, and QIWI. From this amount, QIWI will hold the commission for the operation service, and the remainder will be transferred to the Marketplace.
+The partial amount of commissions is the amount of commissions of the Marketplace on which the transaction is performed, and QIWI. From this amount, QIWI holds the commission for the operation service, and the remainder is transferred to the Marketplace.
 
 The amounts are transmitted in the [authorization request](#sale) or on the [WPF calling](#redirect) in the `cf2` field separated by semicolon:
 
@@ -1181,7 +1181,7 @@ At each stage, be sure to specify the number of the QIWI Wallet in the `cf1` fie
 
 `"cf1": "79111111111"`
 
-If the transaction is confirmed, the amount to be paid will automatically be credited to the QIWI Wallet specified in the request.
+If the transaction is confirmed, the amount to be paid is automatically credited to the QIWI Wallet specified in the request.
 
 <aside class="notice">Max waiting time between authorization and confirmation is 5 days</aside>
 
@@ -1268,7 +1268,7 @@ Follow the steps to send receipt for the transaction:
     * when using QIWI PAY API — in `cheque` parameter for `auth`, `capture`, `sale` operations.
   
 <aside class="notice">
-When your account is in <a href="#test_mode">test mode</a>, the receipt will be processed in test environment.
+When your account is in <a href="#test_mode">test mode</a>, the receipt is processed in test environment.
 </aside>
 
 ### JSON description {#json_receipt}
@@ -1455,51 +1455,53 @@ errors[].message | String | Error text description
 Error code | Name | Description
 ---------- | -------- | --------
 0 | No errors | No errors
-8001 | Internal error | Acquiring Bank technical error
-8002 | Operation not supported | Operation not supported
-8004 | Temporary error | Server is busy, repeat later
-8005 | Route not found | Route for transaction processing not found
-8006 | Parsing error | Unable to process input request, incorrect format
-8008 | No receiver data | Error on transmitting receiver data
-8018 | Transaction not found | Transaction not found
+8001 | Internal error | Acquiring Bank technical error.
+8002 | Operation not supported | Operation not supported.
+8004 | Temporary error | Server is busy, repeat later.
+8005 | Route not found | Route for transaction processing not found.
+8006 | Parsing error | Unable to process input request, incorrect format.
+8008 | No receiver data | Error on transmitting receiver data.
+8018 | Transaction not found | Transaction not found.
 8019 | Incorrect [opcode](#opcode) |
-8020 | Amount too big | `reversal`, `refund` operations amount exceeded
-8021 | Merchant site not found | Unknown merchant with `merchant_site_id`
+8020 | Amount too big | `reversal`, `refund` operations amount exceeded.
+8021 | Merchant site not found | Unknown merchant with `merchant_site_id`.
 8022 | Transaction not found | Transaction from the request not found.
-8023 | Transaction expired | Customer failed to authorize on 3DS within 15 min
-8025 | Opcode is not allowed | Using this [opcode](#opcode) value forbidden for this merchant site
-8026 | Incorrect parent transaction | Incorrect status of the parent transaction
-8027 | Incorrect parent transaction | Incorrect type of the parent transaction
-8028 | Card expired | Card valid date is expired
+8023 | Transaction expired | Customer failed to authorize on 3DS within 15 min.
+8025 | Opcode is not allowed | Using this [opcode](#opcode) value forbidden for this merchant site.
+8026 | Incorrect parent transaction | Incorrect status of the parent transaction.
+8027 | Incorrect parent transaction | Incorrect type of the parent transaction.
+8028 | Card expired | Card valid date is expired.
 8051 | Merchant disabled | This merchant is not activated.
-8052 | Incorrect transaction state | Incorrect transaction status, attempt for `capture` after `finish_3ds` or `reversal`
-8054 | Invalid signature | Invalid signature of the request
+8052 | Incorrect transaction state | Incorrect transaction status, attempt for `capture` after `finish_3ds` or `reversal`.
+8054 | Invalid signature | Invalid signature of the request.
 8055 | Order already paid |
 8056 | In process | Transaction on this card/order is processing now.
-8057 | Card locked | Transaction is already processing upon this card
+8057 | Card locked | Transaction is already processing upon this card.
 8058 | Access denied |
 8059 | Currency is not allowed |
 8060 | Amount too big | Amount is higher than allowed for payout.
-8061 | Currency mismatch | Payout currency and original transaction currency are not the same
-8062 | Temporary error  | Server is busy, repeat the request later
-8069 | Quantity limit of transactions is reached | The number of testing operations per day exceeds the [limit](#test_limit)
-8070 | Amount of transaction is bigger than allowed | Test operation amount exceeds the [allowed value](#test_limit)
+8061 | Currency mismatch | Payout currency and original transaction currency are not the same.
+8062 | Temporary error  | Server is busy, repeat the request later.
+8069 | Quantity limit of transactions is reached | The number of testing operations per day exceeds the [limit](#test_limit).
+8070 | Amount of transaction is bigger than allowed | Test operation amount exceeds the [allowed value](#test_limit).
 8151 | Authentification failed | Customer failed to authenticate on 3DS.
 8152 | Transaction rejected | Transaction rejected by security service.
-8153 | Reattempt not permitted | Repeated authorization request forbidden due to obtained response from a Payment system
-8160 | Transaction rejected | Issuer response: Payment rejected. Try again
-8161 | Transaction rejected | Issuer response: Payment rejected. Try again
-8162 | Transaction rejected | Issuer response: Payment rejected. Try again
-8163 | Transaction rejected | Issuer response: Payment rejected. Contact QIWI Support
-8164 | Transaction rejected | Issuer response: Payment rejected. Limit exceeded. Address to Issuing Bank
-8165 | Transaction rejected | Issuer response: Payment rejected. Check payment details
-8166 | Transaction rejected | Issuer response: Payment rejected. Check card details
-8167 | Transaction rejected | Issuer response: Payment rejected. Check card details
-8168 | Transaction rejected | Issuer response: Transaction forbidden. Address to Issuing Bank
-8169 | Transaction rejected | Issuer response: Payment rejected. Limit exceeded. Address to Issuing Bank
-8170 | Transaction rejected | Issuer response: Payment rejected. Wrong SMS code. Try again
+8153 | Reattempt not permitted | Re-attempting authorization request is forbidden due to Payment system rules.
+8154 | Try again later | Repeat the request later.
+8160 | Transaction rejected | Issuer response: Payment rejected. Try again.
+8161 | Transaction rejected | Issuer response: Payment rejected. Try again.
+8162 | Transaction rejected | Issuer response: Payment rejected. Try again.
+8163 | Transaction rejected | Issuer response: Payment rejected. Contact QIWI Support.
+8164 | Transaction rejected | Issuer response: Payment rejected. Limit exceeded. Address to Issuing Bank.
+8165 | Transaction rejected | Issuer response: Payment rejected. Check payment details.
+8166 | Transaction rejected | Issuer response: Payment rejected. Check card details.
+8167 | Transaction rejected | Issuer response: Payment rejected. Check card details.
+8168 | Transaction rejected | Issuer response: Transaction forbidden. Address to Issuing Bank.
+8169 | Transaction rejected | Issuer response: Payment rejected. Limit exceeded. Address to Issuing Bank.
+8170 | Transaction rejected | Issuer response: Payment rejected. Wrong SMS code. Try again.
+8171 | Reattempt not permitted by pay system | Operation rejected by Payment system. Re-attempting the operation is not possible for the card.
 
-# Test Data {#test_mode}
+# How to Test Operations {#test_mode}
 
 By default, for each new RSP a `merchant_site` record is created in QIWI PAY service in test environment only. You can ask your support manager to transfer any of your  `merchant_site` to test environment, or add new `merchant_site` in test environment.
 
@@ -1518,10 +1520,10 @@ Use [production URLs](#urls) for sending test requests.
 
 To make tests of various payment methods and responses, use different expiry dates:
 
-* If month of expiry date is `02`, then operation is treated as unsuccessful.
-* If month of expiry date is `03`, then operation will process successfully with 3 seconds timeout.
-* If month of expiry date is `04`, then operation will process unsuccessfully with 3 seconds timeout.
-* In all other cases, operation is treated as successful.
+* If month of expiry date is `02`, then operation would be unsuccessful.
+* If month of expiry date is `03`, then operation would be processed successfully with 3 seconds timeout.
+* If month of expiry date is `04`, then operation would be processed unsuccessfully with 3 seconds timeout.
+* In all other cases, operation would be successful.
 
 <a name="test_limit"></a>
 
