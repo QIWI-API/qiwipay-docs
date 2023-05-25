@@ -38,9 +38,9 @@ search: true
 
 <!-- *[MPI]: Merchant Plug-In - a module integrated into QIWI PAY applications to process authentication transactions-->
 
-# Introduction
+# General Information
 
-###### Last update: 2022-11-02 | [Edit on GitHub](https://github.com/QIWI-API/qiwipay-docs/blob/master/qiwipay_en.html.md)
+###### [Edit on GitHub](https://github.com/QIWI-API/qiwipay-docs/blob/master/qiwipay_en.html.md)
 
 QIWI PAY service is intended for card payment operations. The service allows RSP to accept secure payments from their clients.
 
